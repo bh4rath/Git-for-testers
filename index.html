@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Git for Testers</title>
+
+<!-- ============================================================
+     GOOGLE FONTS — Space Grotesk (headings), Inter (body),
+     JetBrains Mono (code) — single CDN link
+     ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   DESIGN SYSTEM — CSS variables
+   ============================================================ */
+:root {
+  --bg:        #0D1117;
+  --surface:   #161B22;
+  --surface-2: #21262D;
+  --border:    #30363D;
+  --primary:   #F78166;
+  --secondary: #3FB950;
+  --text:      #E6EDF3;
+  --text-sec:  #8B949E;
+  --text-mut:  #484F58;
+  --warning:   #D29922;
+
+  --font-head: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-code: "JetBrains Mono", monospace;
+}
+
+/* ============================================================
+   RESET / BASE
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  /* Page-load fade-in */
+  opacity: 0;
+  animation: pageFadeIn 400ms ease forwards;
+}
+
+@keyframes pageFadeIn { to { opacity: 1; } }
+
+h1, h2, h3, h4 { font-family: var(--font-head); font-weight: 600; line-height: 1.2; }
+
+a { color: inherit; }
+
+code {
+  font-family: var(--font-code);
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  color: var(--text);
+}
+
+/* ============================================================
+   LAYOUT CONTAINER
+   ============================================================ */
+.container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ============================================================
+   NAV — fixed top tab bar (scrollable pills on mobile)
+   ============================================================ */
+header.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(13, 17, 23, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 8px;
+  max-width: 820px;
+  margin: 0 auto;
+}
+.brand .logo {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.brand .logo .accent { color: var(--primary); }
+
+nav.tabs {
+  display: flex;
+  gap: 4px;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+nav.tabs::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-sec);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  padding: 12px 14px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ============================================================
+   TAB PANELS — fade in on switch
+   ============================================================ */
+main { padding: 28px 0 0; }
+
+.panel { display: none; }
+.panel.active {
+  display: block;
+  animation: tabFade 200ms ease;
+}
+@keyframes tabFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ============================================================
+   TODAY — header area
+   ============================================================ */
+.district-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-sec);
+  font-weight: 600;
+}
+.day-number {
+  font-family: var(--font-head);
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 2.6rem;
+  line-height: 1.05;
+  margin: 6px 0 2px;
+}
+.day-title {
+  font-family: var(--font-head);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 18px 0 22px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-sec);
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 18px;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+.back-btn:hover { color: var(--text); border-color: var(--text-sec); }
+
+.completed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--secondary);
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-top: 14px;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 18px;
+}
+.card-label {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-body { color: var(--text); font-size: 0.96rem; }
+.card-body.sub { color: var(--text-sec); }
+.prompt-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-sec);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* ============================================================
+   REFLECTION
+   ============================================================ */
+.reflect-prompt { color: var(--text-sec); margin-bottom: 14px; font-size: 0.92rem; }
+
+textarea.reflection {
+  width: 100%;
+  min-height: 200px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-code);
+  font-size: 0.9rem;
+  padding: 16px;
+  border-radius: 8px;
+  resize: vertical;
+  line-height: 1.6;
+}
+textarea.reflection:focus { outline: none; border-color: var(--primary); }
+textarea.reflection:disabled { opacity: 0.8; cursor: default; }
+
+.word-counter {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  color: var(--text-mut);
+  margin-top: 8px;
+  transition: color 200ms ease;
+}
+.word-counter.reached { color: var(--secondary); }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 20px;
+  cursor: pointer;
+  transition: background 300ms ease, opacity 200ms ease, color 300ms ease;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #1a1100;
+}
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--primary);
+  color: #1a1100;
+}
+.btn-success {
+  background: var(--secondary);
+  color: #04210b;
+}
+.submit-row { margin-top: 16px; }
+
+.btn-outline {
+  background: none;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 150ms ease;
+}
+.btn-outline:hover { background: rgba(247, 129, 102, 0.1); }
+
+/* ============================================================
+   COLLAPSIBLE SECTIONS
+   ============================================================ */
+.collapsible .card-label {
+  cursor: pointer;
+  justify-content: space-between;
+  margin-bottom: 0;
+  user-select: none;
+}
+.collapsible .arrow {
+  transition: transform 250ms ease;
+  color: var(--text-sec);
+  font-size: 0.8rem;
+}
+.collapsible.open .arrow { transform: rotate(180deg); }
+
+.collapse-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 250ms ease;
+}
+.collapsible.open .collapse-body { max-height: 1200px; }
+.collapse-inner { padding-top: 14px; }
+
+.reading-link {
+  display: block;
+  text-decoration: none;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.92rem;
+}
+.reading-link:last-child { border-bottom: none; }
+.reading-link .rl-label {
+  color: var(--primary);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-right: 8px;
+}
+.reading-link .rl-title { color: var(--text); }
+.reading-link:hover .rl-title { text-decoration: underline; }
+
+/* ============================================================
+   TOMORROW TEASER
+   ============================================================ */
+.teaser {
+  display: none;
+  border-left: 3px solid var(--primary);
+  background: var(--surface);
+  border-radius: 0 10px 10px 0;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  font-style: italic;
+  color: var(--text-sec);
+}
+.teaser.show {
+  display: block;
+  animation: slideUpFade 400ms ease;
+}
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.teaser .teaser-label {
+  display: block;
+  color: var(--primary);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+}
+
+/* ============================================================
+   SUNDAY — rest note
+   ============================================================ */
+.rest-note {
+  text-align: center;
+  color: var(--text-mut);
+  font-style: italic;
+  font-size: 0.9rem;
+  margin: 16px 0 8px;
+}
+.big-question { font-size: 1.15rem; font-style: italic; color: var(--text); line-height: 1.6; }
+.sunday-actions { margin: 4px 0 0; }
+
+/* ============================================================
+   PROGRESS — streak
+   ============================================================ */
+.streak-big {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.streak-sub { color: var(--text-sec); margin-top: 2px; }
+.section-title {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 32px 0 16px;
+  letter-spacing: 0.02em;
+}
+
+/* District map */
+.district-row { margin-bottom: 16px; }
+.district-row .dr-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+.dr-head .dr-name { color: var(--text); font-weight: 600; }
+.dr-head .dr-range { color: var(--text-mut); font-size: 0.8rem; font-family: var(--font-code); }
+.bar { background: var(--border); height: 4px; border-radius: 2px; overflow: hidden; }
+.bar-fill { background: var(--secondary); height: 100%; border-radius: 2px; transition: width 500ms ease; }
+
+/* 45-square grid */
+.journey { display: flex; flex-direction: column; gap: 6px; }
+.journey-row { display: flex; align-items: center; gap: 6px; }
+.row-label {
+  width: 28px;
+  flex: 0 0 28px;
+  font-size: 0.7rem;
+  color: var(--text-mut);
+  font-family: var(--font-code);
+  text-align: right;
+}
+.row-squares {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+.sq {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-family: var(--font-code);
+  transition: transform 150ms ease, background 500ms ease;
+}
+.sq.completed { background: var(--secondary); color: #fff; cursor: pointer; }
+.sq.completed:hover { transform: scale(1.1); }
+.sq.current { background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; }
+.sq.current:hover { transform: scale(1.1); }
+.sq.locked { background: var(--surface-2); border: 1px solid var(--border); font-size: 10px; cursor: default; }
+.sq.empty { visibility: hidden; }
+
+/* Stats row */
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 10px;
+  margin-top: 8px;
+}
+.stat { text-align: center; flex: 1; }
+.stat + .stat { border-left: 1px solid var(--border); }
+.stat .num { font-family: var(--font-head); font-size: 1.5rem; font-weight: 700; color: var(--text); }
+.stat .lbl { font-size: 0.74rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================================
+   Q&A ACCORDION
+   ============================================================ */
+.qa-item { border-bottom: 1px solid var(--border); }
+.qa-q {
+  cursor: pointer;
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--text);
+  user-select: none;
+}
+.qa-q .arrow { color: var(--text-sec); transition: transform 250ms ease; font-size: 0.8rem; }
+.qa-item.open .qa-q .arrow { transform: rotate(180deg); }
+.qa-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 250ms ease;
+  color: var(--text-sec);
+}
+.qa-item.open .qa-a { max-height: 400px; }
+.qa-a-inner { padding-bottom: 18px; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  text-align: center;
+  color: var(--text-mut);
+  font-size: 0.82rem;
+  padding: 40px 16px;
+  margin-top: 30px;
+  border-top: 1px solid var(--border);
+}
+footer .reset-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--text-mut);
+  font-size: 0.78rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+footer .reset-link:hover { color: var(--text-sec); }
+
+/* ============================================================
+   SHAKE (locked day click)
+   ============================================================ */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+.shake { animation: shake 300ms ease; }
+
+/* Tooltip text helper */
+.tip { position: relative; }
+
+/* ============================================================
+   MOBILE RESPONSIVENESS (mobile-first overrides for desktop)
+   ============================================================ */
+@media (max-width: 600px) {
+  .day-number { font-size: 2.08rem; }        /* -20% */
+  .day-title  { font-size: 1.15rem; }
+  .container  { padding: 0 16px; }
+  textarea.reflection { min-height: 150px; }
+  .row-squares { grid-template-columns: repeat(7, 1fr); }
+  .tab-btn .emoji { display: none; }          /* hide emoji on mobile */
+}
+@media (max-width: 400px) {
+  .row-squares { grid-template-columns: repeat(5, 1fr); }
+  .sq { height: 30px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     TOP BAR + NAV TABS
+     ============================================================ -->
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">Git for <span class="accent">Testers</span></span>
+  </div>
+  <nav class="tabs" id="tabNav">
+    <button class="tab-btn active" data-tab="today"     onclick="showTab('today')"><span class="emoji">📍 </span>TODAY</button>
+    <button class="tab-btn"        data-tab="progress"  onclick="showTab('progress')"><span class="emoji">📊 </span>PROGRESS</button>
+    <button class="tab-btn"        data-tab="community" onclick="showTab('community')"><span class="emoji">👥 </span>COMMUNITY</button>
+    <button class="tab-btn"        data-tab="resources" onclick="showTab('resources')"><span class="emoji">📚 </span>RESOURCES</button>
+    <button class="tab-btn"        data-tab="qa"        onclick="showTab('qa')"><span class="emoji">❓ </span>Q&amp;A</button>
+  </nav>
+</header>
+
+<main>
+  <div class="container">
+    <!-- TAB 1 — TODAY -->
+    <section class="panel active" id="panel-today"></section>
+
+    <!-- TAB 2 — PROGRESS -->
+    <section class="panel" id="panel-progress"></section>
+
+    <!-- TAB 3 — COMMUNITY -->
+    <section class="panel" id="panel-community">
+      <div class="card">
+        <div class="card-label">📣 From the Team</div>
+        <div class="card-body sub">Welcome to Git for Testers. Day 1 is live. Your only job today is to read, try, and reflect. The rest follows.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">💬 Join the Conversation</div>
+        <div class="card-body sub" style="margin-bottom:16px;">Share your reflections, your screenshots, your git log outputs. The community learns from what you show.</div>
+        <a href="#" class="btn-outline">Join Community →</a>
+      </div>
+      <div class="card">
+        <div class="card-label">🕗 Office Hours</div>
+        <div class="card-body sub" style="margin-bottom:10px;">Drop in with questions, stuck points, or wins. Every question you ask publicly helps someone who was afraid to ask it.</div>
+        <div style="color:var(--text-sec);font-weight:600;font-size:0.85rem;">Weekdays · 7–8am</div>
+      </div>
+    </section>
+
+    <!-- TAB 4 — RESOURCES -->
+    <section class="panel" id="panel-resources"></section>
+
+    <!-- TAB 5 — Q&A -->
+    <section class="panel" id="panel-qa">
+      <h1 style="font-size:1.5rem;margin-bottom:6px;">Frequently Asked Questions</h1>
+      <p style="color:var(--text-sec);margin-bottom:20px;">Ask specific questions in the community. Generic questions get generic answers.</p>
+      <div id="qaList"></div>
+    </section>
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div>Git for Testers · 45 days · Built with intention</div>
+  <span class="reset-link" onclick="resetProgress()">Reset Progress</span>
+</footer>
+
+<script>
+/* ============================================================
+   COHORT_DATA — all cohort content embedded (no fetch)
+   ============================================================ */
+const COHORT_DATA = {"cohort": {"name": "Git for Testers", "tagline": "From zero to confident — Git for QA engineers", "audience": "QA engineers with no prior Git experience", "totalDays": 45, "practiceRepo": "https://github.com/PLACEHOLDER/git-for-testers-practice"}, "districts": [{"number": 1, "name": "The Map", "days": "1–7", "theme": "Destroy the fear. Build the belief."}, {"number": 2, "name": "The Language", "days": "8–14", "theme": "Learn to speak Git fluently."}, {"number": 3, "name": "The Solo Workflow", "days": "15–21", "theme": "Work alone in Git without fear."}, {"number": 4, "name": "The Team Workflow", "days": "22–28", "theme": "Git was built for teams."}, {"number": 5, "name": "The Branch", "days": "29–35", "theme": "Branches are the philosophy of professional teams."}, {"number": 6, "name": "The QA Toolkit", "days": "36–42", "theme": "Git as a QA superpower."}, {"number": 7, "name": "The Identity", "days": "43–45", "theme": "Claim who you've become."}], "days": [{"day": 1, "district": 1, "districtName": "The Map", "title": "Your Code Has Been Overwritten. There's No Backup.", "isSunday": false, "idea": "You've saved over a file before. Maybe a test script, maybe a Word doc. You hit save, closed it — and realised the old version is gone forever. Now imagine that happening to 10,000 lines of test code. Shared with a team of 8.\n\nThat's what working without Git feels like.\n\nGit is a time machine for your code. Every time you 'commit' (save a checkpoint), Git remembers exactly what your files looked like at that moment. You can go back to any checkpoint. Anytime. Without losing anything.\n\nThat's it. That's the whole idea.\n\nVersion control = a system that remembers every version of every file, forever. Git is the most widely used version control system in the world.", "why": "Right now, when you write a test script, you probably save one file. Maybe you email it. Maybe you rename it 'final_v3_REALLYFINAL.py'. That system breaks the moment a second person touches it.\n\nEvery QA team you will ever work in uses Git. If you don't know Git, you can't collaborate on test code. You can't review what changed. You can't undo a mistake. You are permanently dependent on a developer to rescue you.\n\nThat ends here.", "task": "Step 1 — Create a free GitHub account at github.com (skip if you have one).\nStep 2 — Open this link: https://github.com/PLACEHOLDER/git-for-testers-practice\nStep 3 — Click the green 'Code' button. Look at what's there. Don't click anything yet.\nStep 4 — Read the README.md file in the repo. It has 3 test files inside. Just read them.\nStep 5 — Screenshot the repo homepage and save it. You'll compare this to Day 45.", "reflection": "Use this frame (minimum 100 words):\n\n'Before today, I thought version control was [X — what did you assume it was?]. Today I noticed [Y — what surprised you when you looked at the repo?]. That makes me feel [Z — nervous? curious? relieved?]. Tomorrow I will [W — what's one thing you want to understand better?].'\n\nDon't overthink it. Write like you're texting a colleague.", "further": [{"label": "Video", "title": "What is Git? — Fireship (100 seconds)", "url": "https://www.youtube.com/watch?v=hwP7WQkmECE"}, {"label": "Article", "title": "GitHub Hello World Guide", "url": "https://docs.github.com/en/get-started/quickstart/hello-world"}], "stretch": "Find one public QA/test automation repository on GitHub (search 'playwright tests' or 'selenium automation'). Look at its commit history. Notice how many people contributed. Drop the link in the community with one sentence: 'This repo does [X].'", "teaser": "Tomorrow you'll find out why the most dangerous words in a QA team are 'I'll just send you the file.'"}, {"day": 2, "district": 1, "districtName": "The Map", "title": "I'll Just Send You The File", "isSunday": false, "idea": "Picture this: You write a login test. Your colleague writes a checkout test. You email each other the files. You paste them together manually. She's edited line 47 while you were editing line 47. Now you have two versions of the truth and no way to know which is right.\n\nThis is called a merge conflict — and it happens constantly in teams that don't use version control.\n\nGit solves this by tracking WHO changed WHAT and WHEN. Not just what the file looks like now — but the full history of every change, every person, every reason.\n\nThink of it like a Google Doc with track changes turned on permanently — except it works for code, it never slows down, and it never lies.", "why": "As a QA engineer, your test scripts are team assets — not your personal files. The moment a second person needs to touch them, 'sending the file' breaks down.\n\nGit lets multiple people work on the same test suite simultaneously. No overwriting. No confusion. No 'which version did you send me?'\n\nThis is the foundation of every professional QA team's workflow.", "task": "Step 1 — Go back to the practice repo from Day 1.\nStep 2 — Click on any test file (e.g. login.test.js).\nStep 3 — Click the 'History' button (top right of the file view on GitHub).\nStep 4 — You'll see a list of commits — each one is a saved checkpoint.\nStep 5 — Click on the oldest commit. Read what changed. Read the commit message.\nStep 6 — Write down (in your notes): What changed? Who changed it? Why (based on the message)?", "reflection": "'Before today, I thought tracking file changes meant [X]. Today I noticed that Git's commit history shows [Y — what did you find?]. That makes me feel [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "The problem Git solves — Atlassian", "url": "https://www.atlassian.com/git/tutorials/what-is-version-control"}, {"label": "Video", "title": "Git in 15 minutes — Colt Steele", "url": "https://www.youtube.com/watch?v=USjZcfj8yxE"}], "stretch": "Look at the commit history of a popular open-source test repo. Find one commit message that is unclear or unhelpful (e.g. 'fix stuff'). Find one that is clear and professional. Post both in the community. What makes a good commit message?", "teaser": "Tomorrow you'll meet the three places your code lives in Git — and why most beginners only know about one of them."}, {"day": 3, "district": 1, "districtName": "The Map", "title": "Three Places Your Code Lives", "isSunday": false, "idea": "Most beginners think code lives in one place: the file on their laptop. Git actually tracks your code across three distinct areas:\n\n1. Working Directory — the files you're actively editing right now. (Your desk. Messy. Work in progress.)\n\n2. Staging Area — files you've marked as 'ready to save.' (Your inbox tray. Reviewed. Waiting to be filed.)\n\n3. Repository — the permanent record of every committed checkpoint. (Your filing cabinet. Organised. Never loses anything.)\n\nThe flow is always: Working Directory → Staging Area → Repository. You never skip a step.\n\nYou already know this from real life: Draft email → Review draft → Hit send. Git works exactly the same way.", "why": "Understanding these three areas is what separates someone who 'kind of uses Git' from someone who uses it with intention.\n\nWhen something goes wrong (and it will), knowing which area your file is in tells you exactly how to fix it. Without this mental model, every error message feels random. With it, you'll diagnose problems in seconds.", "task": "No terminal today. Just observation.\n\nStep 1 — Install Git on your machine:\nMac: git comes pre-installed. Open Terminal, type: git --version\nWindows: Download from https://git-scm.com/download/win — use all defaults.\n\nStep 2 — Open Terminal (Mac) or Git Bash (Windows).\nStep 3 — Type: git --version\nIf you see a version number, Git is installed. Screenshot it.\n\nStep 4 — Draw the three areas (Working Dir → Staging → Repo) on paper or in Notion. Label each with your own analogy. Not mine. Yours.", "reflection": "'Before today, I thought code just lived [X — one place? two?]. Today I noticed that Git has three areas, and the one that surprised me most was [Y]. My own analogy for the staging area is [your analogy]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Git's three trees explained — Official", "url": "https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified"}, {"label": "Video", "title": "Staging area explained in 5 minutes", "url": "https://www.youtube.com/watch?v=e9lnsKot_SQ"}], "stretch": "Read about the fourth 'area' that some Git users talk about: the Stash. What problem does it solve? Write 3 sentences explaining it in your own words and post in the community.", "teaser": "Tomorrow you'll type your first Git command — and it will feel like nothing happened. That's exactly right."}, {"day": 4, "district": 1, "districtName": "The Map", "title": "Your First Command (And Why It Feels Like Nothing)", "isSunday": false, "idea": "The first Git command you'll ever type is: git status\n\nIt doesn't create anything. It doesn't save anything. It doesn't change anything. It just answers one question: 'What's going on right now?'\n\nThis is the most important habit in Git. Before you do anything — check status. After you do something — check status. When something breaks — check status.\n\nThink of git status like the dashboard of your car. You don't drive without glancing at the dashboard. You don't work in Git without checking status.\n\nExpert Git users type git status more than any other command. Beginners skip it and then wonder why things went wrong.", "why": "git status tells you:\n— Which files have changed\n— Which files are staged (ready to commit)\n— Which files Git isn't tracking yet\n— Which branch you're on\n\nEvery piece of information you need to take the next right action — it's all here. This one command will save you from more mistakes than any other.", "task": "Step 1 — Clone the practice repo to your machine. In your terminal, type:\ngit clone https://github.com/PLACEHOLDER/git-for-testers-practice\n\nStep 2 — Navigate into it:\ncd git-for-testers-practice\n\nStep 3 — Type: git status\nRead every line of the output carefully.\n\nStep 4 — Open login.test.js in any text editor. Add one comment line at the top:\n// I am learning Git for Testers - Day 4\nSave the file.\n\nStep 5 — Type: git status again. Notice what changed in the output. Screenshot both outputs side by side.\n\nStep 6 — Post your screenshot in the community with one observation.", "reflection": "'Before today, I thought Git commands would [X — be complicated? break things?]. Today I noticed that git status [Y — what did the output tell you?]. The thing that surprised me most was [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git status documentation — Official", "url": "https://git-scm.com/docs/git-status"}, {"label": "Article", "title": "Your first Git commands — The Odin Project", "url": "https://www.theodinproject.com/lessons/foundations-introduction-to-git"}], "stretch": "Type: git log. Read the output. Each entry is one commit. Find: the commit hash, the author, the date, the message. What does the most recent commit tell you about what changed?", "teaser": "Tomorrow you'll make Git remember something for the first time — and you'll understand why a commit message is not just a label."}, {"day": 5, "district": 1, "districtName": "The Map", "title": "Make Git Remember", "isSunday": false, "idea": "Today you make your first commit.\n\nA commit is Git's version of hitting 'Save checkpoint.' But unlike Ctrl+S, a commit comes with three things:\n— A snapshot of every staged file at this exact moment\n— A timestamp and your name (so the team knows who did what)\n— A message — your explanation of WHY you made this change\n\nThe message is the part most beginners underestimate. 'fixed stuff' tells your future self nothing. 'Fix login test to handle empty password field — was causing false positives' tells everything.\n\nA commit message is a letter to your future self and your team. Write it like one.\n\nTwo commands. That's all:\ngit add .          ← move changes to staging area\ngit commit -m \"Your message here\"   ← save the checkpoint", "why": "In QA, you'll often need to answer: 'When did this test start failing?' Or: 'Who changed this test file and why?'\n\nA clean commit history answers both questions instantly. A messy one (or no history at all) means hours of detective work.\n\nYour commit messages are documentation. The best QA engineers treat them that way from Day 1.", "task": "Step 1 — First, tell Git who you are (one-time setup):\ngit config --global user.name \"Your Name\"\ngit config --global user.email \"your@email.com\"\n\nStep 2 — Make sure you still have the Day 4 change in login.test.js.\nType: git status (confirm the file shows as modified)\n\nStep 3 — Stage the file:\ngit add login.test.js\n\nStep 4 — Type git status again. Notice how the output changed.\n\nStep 5 — Commit it:\ngit commit -m \"Add Day 4 learning comment to login test\"\n\nStep 6 — Type: git log\nYou'll see your commit at the top. With your name. Your message. Your timestamp. Screenshot this. This is your first permanent checkpoint.", "reflection": "'Before today, I thought saving a file and committing were [X — the same? different?]. Today I noticed that git add and git commit are two separate steps because [Y — why do you think that is?]. Writing the commit message felt [Z — easy? awkward? important?]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "How to write good commit messages — Chris Beams", "url": "https://cbea.ms/git-commit/"}, {"label": "Tool", "title": "Conventional Commits standard", "url": "https://www.conventionalcommits.org/"}], "stretch": "Make two more small changes to different files in the repo. Stage and commit them separately — not together. Write a meaningful commit message for each. Then run git log and read your three-commit history. Notice: you now have a story. Not just files.", "teaser": "Tomorrow you'll find out what Git does when two people edit the same line of code at the same time — and it's not what you expect."}, {"day": 6, "district": 1, "districtName": "The Map", "title": "Git Doesn't Guess. It Asks.", "isSunday": false, "idea": "When two people edit the same line of the same file, Git doesn't decide who's right. It stops. It marks the conflict. It asks you to decide.\n\nThis is called a merge conflict — and it terrifies most beginners. It shouldn't. It's Git being honest with you.\n\nA conflict looks like this in your file:\n\n<<<<<<< HEAD\n  expect(page).toHaveTitle('Swag Labs');\n=======\n  expect(page).toHaveTitle('Sauce Demo');\n>>>>>>> feature/update-title-check\n\nThe top section (HEAD) = your version. The bottom section = the incoming change. Git is saying: 'Both of these exist. You decide which one is true.'\n\nYou delete the markers, keep the right code, save, and commit. That's it. Conflicts are not disasters. They're decisions.", "why": "Every QA engineer who works with developers will face merge conflicts. The ones who panic get avoided by the team. The ones who resolve them calmly become the person everyone trusts with the repo.\n\nUnderstanding conflicts before you experience them means you'll handle your first real one without freezing.", "task": "Step 1 — Open login.test.js. Change line 1 to:\n// Version A — my change\nSave. Stage. Commit: 'Simulate conflict - version A'\n\nStep 2 — Now open the file again. Change line 1 to:\n// Version B — incoming change\nBut this time — do NOT commit. Just save the file.\n\nStep 3 — Type: git diff\nThis shows you exactly what changed since your last commit. The red lines = what was there. The green lines = what's there now. Read the output carefully. Screenshot it.\n\nStep 4 — Now commit Version B:\ngit add login.test.js\ngit commit -m 'Simulate conflict - version B'\n\nStep 5 — Run git log. You now have two commits that represent two competing decisions. Write in your notes: 'A merge conflict is _______ in my own words.'", "reflection": "'Before today, merge conflicts sounded [X — scary? confusing? technical?]. Today I noticed that what Git is actually doing is [Y — your own explanation]. That reframe makes me feel [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Resolving merge conflicts — GitHub Docs", "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-using-the-command-line"}, {"label": "Video", "title": "Merge conflicts explained visually", "url": "https://www.youtube.com/watch?v=xNVM5UxlFSA"}], "stretch": "Research the difference between: a merge conflict (what we covered today), a merge commit (what happens after you resolve one), and a fast-forward merge (when there's no conflict at all). Post a 3-row table in the community: Term | What It Means | When It Happens.", "teaser": "Tomorrow is Sunday — no new content. But there's one question waiting for you that might change how you see your entire testing career."}, {"day": 7, "district": 1, "districtName": "The Map", "title": "Connecting The Dots", "isSunday": true, "recapPrompt": "Look back at your 6 reflections from this week. Then write:\n\n— What did you believe about Git before Day 1 that you now know is wrong?\n— Which of the 6 days felt most relevant to your actual QA work? Why?\n— What's the one thing you're still confused about? (Confusion is data. Name it specifically — not 'I'm confused about Git.' Name it: 'I don't understand why staging is a separate step from committing.')", "communityPrompt": "Share one thing from this week in the community. It could be your Day 5 git log screenshot. Your conflict simulation from Day 6. Or just one sentence that landed differently than you expected. It doesn't have to be impressive. It has to be real.", "closingQuestion": "Am I a tester who uses files — or am I becoming an engineer who manages code?"}, {"day": 8, "district": 2, "districtName": "The Language", "title": "Every Tool Has A Vocabulary. This Is Git's.", "isSunday": false, "idea": "When you joined your first QA role, you learned a vocabulary. Regression. Smoke test. Defect lifecycle. Test coverage. You didn't panic — you just learned the words.\n\nGit has its own vocabulary. About 15 core terms. Once you know them, every tutorial, every Stack Overflow answer, every developer conversation makes sense.\n\nHere are the 6 most essential Git terms you'll use every single day:\n\nRepository — The project folder Git is tracking (the whole thing)\nCommit — A saved checkpoint with a message and timestamp\nBranch — A parallel version of the repo to work in safely\nClone — Downloading a repo from GitHub to your machine\nPush — Sending your commits from your machine to GitHub\nPull — Getting the latest commits from GitHub to your machine", "why": "In a standup, a developer will say: 'I pushed the fix to the feature branch — can you pull and retest?'\n\nIf you don't know those words, you nod and pretend. If you do, you say: 'Sure — is it merged to main yet or should I test on the branch?'\n\nThat second response marks you as someone who belongs in the conversation. Vocabulary is confidence. Confidence is influence.", "task": "Step 1 — Open a blank doc, Notion page, or paper.\nStep 2 — Write all 6 terms from today WITHOUT looking at them.\nStep 3 — Write your own definition for each — not mine. Yours. Use an analogy from your QA work if you can.\nExample: 'A branch is like a test environment — isolated, safe to break, merged back when it's ready.'\nStep 4 — Go to the practice repo on GitHub. Find one example of each term IN the repo.\nStep 5 — Post your 6 analogies in the community.", "reflection": "'Before today, when developers used Git terms I felt [X]. Today I wrote my own definitions and noticed [Y — which term was hardest to define?]. The analogy I'm most proud of is [Z — share it]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Git glossary — Official", "url": "https://git-scm.com/docs/gitglossary"}, {"label": "Article", "title": "Git terms explained for beginners — Atlassian", "url": "https://www.atlassian.com/git/glossary"}], "stretch": "Find 4 more Git terms you've heard but don't fully understand yet (Examples: stash, rebase, tag, HEAD). Add them to your personal glossary with your best guess at a definition. We'll verify them as the cohort progresses.", "teaser": "Tomorrow you'll find out what 'HEAD' means in Git — and why it's not as scary as it sounds."}, {"day": 9, "district": 2, "districtName": "The Language", "title": "Where Are You Right Now? Git Always Knows.", "isSunday": false, "idea": "Open Google Maps. There's a blue dot showing where you are right now. That blue dot is HEAD in Git.\n\nHEAD is Git's way of saying: 'This is where you currently are in the history of the project.'\n\nHEAD almost always points to the latest commit on your current branch. When you make a new commit, HEAD moves forward automatically. When you switch branches, HEAD moves to that branch.\n\nYou don't control HEAD directly. But you read it constantly — because it tells you exactly where you're standing in your project's history.\n\nTwo things HEAD always answers:\n1. Which branch am I on?\n2. Which commit am I looking at?", "why": "When something breaks, the first question is: 'What state is my repo in right now?'\n\nHEAD answers that. Instantly. When you see error messages referencing HEAD, you now know Git is telling you about your current position — not pointing at something dangerous or broken.\n\nHalf of all Git confusion disappears once you understand HEAD.", "task": "Step 1 — Open your terminal. Navigate to the practice repo.\nStep 2 — Type: git log --oneline\nYou'll see a short list of commits. The top one has '(HEAD -> main)' next to it. That's Git telling you: 'You are here.'\n\nStep 3 — Type: git status\nLook at the first line. It says 'On branch main.' That's HEAD telling you which branch you're on.\n\nStep 4 — Type: cat .git/HEAD\nYou'll see: ref: refs/heads/main\nThat's it. HEAD is literally a tiny text file pointing to your branch.\n\nStep 5 — Screenshot your git log --oneline output. Circle the HEAD marker. Post in community with one sentence explaining it.", "reflection": "'Before today, when I saw HEAD in Git output I thought [X]. Today I discovered that HEAD is actually [Y — your own explanation]. The analogy that makes most sense to me is [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Understanding HEAD in Git — Atlassian", "url": "https://www.atlassian.com/git/tutorials/resetting-checking-out-and-reverting"}, {"label": "Video", "title": "What is HEAD in Git? — 6 minutes", "url": "https://www.youtube.com/watch?v=zGCNhOkKmj4"}], "stretch": "Type: git log --oneline --decorate --graph. This shows your commit history as a visual graph. What does the graph tell you that the plain log doesn't? Post your screenshot and one observation in the community.", "teaser": "Tomorrow you'll learn the one Git term that confuses even experienced developers — and why that confusion is completely avoidable with the right mental model."}, {"day": 10, "district": 2, "districtName": "The Language", "title": "Origin Is Not Where You Think It Is", "isSunday": false, "idea": "When you cloned the practice repo on Day 4, Git did something quietly in the background. It labelled the GitHub version of the repo with a nickname: origin.\n\nOrigin = the remote repo you cloned from. That's all it is. A nickname. A shortcut.\n\nWhen you type: git push origin main\nYou're saying: 'Push my commits to the remote called origin, on the branch called main.'\n\nWhen you type: git pull origin main\nYou're saying: 'Pull the latest commits from origin's main branch to my machine.'\n\nTwo repos exist simultaneously:\n— Your local repo (on your laptop)\n— The remote repo (on GitHub, nicknamed 'origin')\n\nThey are separate. They don't automatically sync. You sync them manually with push and pull. This is intentional. You decide when to share your work.", "why": "Most Git mistakes happen because people forget that local and remote are two different things.\n\n'But I committed it!' ≠ 'My team can see it.' You committed locally. Until you push, it only exists on your machine.\n\nUnderstanding origin means you'll never wonder again why your teammate can't see your changes.", "task": "Step 1 — In your terminal, inside the practice repo, type:\ngit remote -v\nYou'll see two lines — both pointing to the GitHub URL. One says (fetch), one says (push). These are both labelled 'origin.'\n\nStep 2 — Type: git remote show origin\nRead every line of this output carefully.\n\nStep 3 — In your notes, draw a simple diagram:\n[Your Laptop] ←push/pull→ [GitHub (origin)]\nLabel what lives where.\n\nStep 4 — Make a small change to any test file. Commit it locally. Then type: git status\nNotice Git says 'Your branch is ahead of origin/main by 1 commit.' That's Git telling you: local and remote are out of sync.\n\nStep 5 — Screenshot the status message. Post in community.", "reflection": "'Before today, I thought when I committed something [X — did you think GitHub had it?]. Today I discovered that local and remote are [Y — separate? connected? both?]. The moment that clicked for me was [Z — describe it specifically]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Working with remotes — Git official book", "url": "https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes"}, {"label": "Article", "title": "Understanding origin and upstream — Atlassian", "url": "https://www.atlassian.com/git/tutorials/git-forks-and-upstreams"}], "stretch": "What happens if a repo has more than one remote? (This is common in open source — you have origin for your fork and upstream for the original project.) Research it and post a 3-sentence explanation in the community.", "teaser": "Tomorrow you'll finally understand what a branch really is — and why working directly on main is one of the most dangerous habits in software teams."}, {"day": 11, "district": 2, "districtName": "The Language", "title": "Never Work On Main", "isSunday": false, "idea": "Imagine your test suite is a tree. The trunk is main — the stable, production-ready version that your whole team depends on.\n\nA branch is a limb you grow off the trunk. You do your work on the limb. If it grows well, you attach it back to the trunk. If it breaks, you cut it off. The trunk is untouched.\n\nThat's branching.\n\nWorking directly on main is like doing surgery on the trunk itself. One mistake and the whole tree is damaged.\n\nIn professional teams, this rule is almost universal:\n— main = sacred. Stable. Only updated via reviewed, approved code.\n— feature branches = where all work happens.\n— You branch off main, do your work, then merge back.\n\nTwo commands:\ngit branch feature/login-test    ← creates the branch\ngit checkout feature/login-test  ← moves you onto it\n\nOr in one shortcut:\ngit checkout -b feature/login-test", "why": "As a QA engineer, you'll often update test scripts while a developer is updating the source code simultaneously.\n\nIf you both work on main, you'll constantly overwrite each other. If you each work on your own branch, you work in parallel — safely.\n\nBranching is not a developer concept. It's a team concept. QA engineers who understand branching become the most collaborative person on the team.", "task": "Step 1 — In your terminal, inside the practice repo:\ngit checkout -b feature/day11-login-update\nYou're now on a new branch. Confirm with: git status\n\nStep 2 — Make a small change to login.test.js.\nAdd a comment: // Updated on feature branch - Day 11\nSave the file.\n\nStep 3 — Stage and commit:\ngit add login.test.js\ngit commit -m \"Update login test comment on feature branch\"\n\nStep 4 — Type: git log --oneline\nYour new commit is there — on your branch only.\n\nStep 5 — Switch back to main:\ngit checkout main\nOpen login.test.js. Your Day 11 change is gone. Not deleted — it's safe on your feature branch.\nSwitch back: git checkout feature/day11-login-update\nIt's back.\n\nStep 6 — Screenshot both states. Post in community.", "reflection": "'Before today, I thought branches were [X — complicated? only for developers?]. Today I created my first branch and noticed [Y — what happened when you switched back to main?]. That makes me feel [Z — confident? surprised? nervous?]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Git branching — the definitive guide", "url": "https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell"}, {"label": "Video", "title": "Git branches explained in 5 minutes", "url": "https://www.youtube.com/watch?v=e2IbNHi4uCI"}], "stretch": "Research the difference between branch naming conventions used in real teams: feature/login-fix, fix/login-timeout, chore/update-dependencies, test/add-checkout-coverage. Why do teams use prefixes? What problem does it solve? Post your answer in the community.", "teaser": "Tomorrow you'll learn the Git command that most beginners use wrong — and how using it right makes you look like a senior engineer immediately."}, {"day": 12, "district": 2, "districtName": "The Language", "title": "Pull Before You Push. Always.", "isSunday": false, "idea": "Here's a scenario that happens in every team:\n\nYou and a colleague are both working on the test suite. She pushed 3 commits to main this morning while you were in meetings. You've been writing tests all day and now you try to push.\n\nGit refuses. It says: 'rejected — non-fast-forward.'\n\nWhat went wrong? You tried to push without pulling first. Your local repo is behind the remote. Git won't let you overwrite her work with yours.\n\nThe fix is a two-step habit that senior engineers do automatically:\n\ngit pull origin main    ← get what's new on GitHub\ngit push origin main    ← now send yours\n\nPull. Then push. Every single time.\n\nThink of it like checking your email before sending one. You wouldn't send a reply without reading the thread first. Same principle.", "why": "The 'rejected push' error is the #1 Git panic moment for beginners. It looks scary. It isn't. It just means: get the latest, then send yours.\n\nBuilding the pull-before-push habit from Day 12 means you will almost never hit a painful push rejection again. And when you do, you'll know exactly why and exactly what to do.", "task": "Step 1 — Go to the practice repo ON GITHUB (browser). Click on any file → click the pencil (edit) icon. Make a tiny change directly in the browser. Scroll down → click 'Commit changes.' You've now simulated a teammate pushing to GitHub.\n\nStep 2 — Back in your terminal (on main branch):\ngit status\nIt will say 'Your branch is up to date' — but it's wrong. Git doesn't check GitHub automatically.\n\nStep 3 — Type: git fetch origin\nNow type: git status again. Now it says 'Your branch is behind origin/main by 1 commit.'\nThat's the difference between fetch (check) and pull (get).\n\nStep 4 — Type: git pull origin main\nGit downloads and applies the change from GitHub.\n\nStep 5 — Write in your notes:\nfetch = check what's new (don't apply yet)\npull = check AND apply\nPost this distinction in the community.", "reflection": "'Before today, I thought git pull and git fetch were [X — the same? different?]. Today I discovered the real difference is [Y — your own words]. The habit I'm committing to from today is [Z — be specific]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git fetch vs git pull — Atlassian", "url": "https://www.atlassian.com/git/tutorials/syncing/git-fetch"}, {"label": "Article", "title": "Understanding git pull — Git official", "url": "https://git-scm.com/docs/git-pull"}], "stretch": "Research: what is git pull --rebase and when would you use it instead of a regular git pull? This is a common team setting — worth knowing before someone asks you. Post a 3-sentence explanation in the community.", "teaser": "Tomorrow you'll build your personal Git vocabulary reference — the one document you'll open in every confusing Git moment for the rest of your career."}, {"day": 13, "district": 2, "districtName": "The Language", "title": "Build Your Git Dictionary", "isSunday": false, "idea": "You've covered a lot of vocabulary this week: Repository. Commit. Branch. Clone. Push. Pull. HEAD. Origin. Main. Fetch. Staging. Working directory.\n\nToday is consolidation day. Not new content — deeper ownership of what you've learned.\n\nThe difference between knowing a word and owning it is being able to use it in a sentence without thinking.\n\nA surgeon doesn't pause to recall what 'incision' means. A pilot doesn't Google 'throttle' mid-flight. A QA engineer working with Git shouldn't hesitate when a dev says 'rebase your branch on main.'\n\nToday you build the reference that makes that fluency real.", "why": "Every senior engineer has a personal reference system. Notes, cheatsheets, bookmarks — something they built from their own learning that they actually understand.\n\nNot a copied cheatsheet from Google. One they wrote. In their own words. With their own examples.\n\nWhen you're stuck in a real Git situation at work, you'll open YOUR notes — not a random blog post. That's the goal of today.", "task": "Build your personal Git Dictionary. Use Notion, Google Docs, or paper.\n\nFor each term, write:\nTerm | What It Means (my words) | Command (if any) | My QA Analogy\n\nInclude every term from the past 6 days:\nRepository, Commit, Branch, Clone, Push, Pull, HEAD, Origin, Fetch, Staging\n\nFill in your own analogies — don't use mine. Add any other terms from your Stretch notes. Post a screenshot of your dictionary in the community.", "reflection": "'Before this week, Git vocabulary felt [X]. Today, after building my own dictionary, I feel [Y]. The term I now understand most clearly is [Z — explain it]. The one I still want to solidify is [W — name it honestly].'", "further": [{"label": "Tool", "title": "Git cheatsheet by GitHub", "url": "https://education.github.com/git-cheat-sheet-education.pdf"}, {"label": "Book", "title": "Pro Git — free, the definitive Git reference", "url": "https://git-scm.com/book/en/v2"}], "stretch": "Add a 'When I'd Use This' column to your dictionary. For each term, write one real QA scenario where you'd use it. Example: Push — 'After I finish updating the regression test suite and want the team to see my changes.'", "teaser": "Tomorrow is Sunday — but the question waiting for you might be the most important one of the whole cohort."}, {"day": 14, "district": 2, "districtName": "The Language", "title": "The Language Belongs To You Now", "isSunday": true, "recapPrompt": "Look back at your 6 reflections from this week. Then write:\n\n— Pick 3 terms from your Git dictionary. Use each one in a sentence describing something that happened in your actual QA work this week.\n— Which concept shifted something for you? Not just 'I learned it' — but actually changed how you think?\n— On Day 8, you wrote your own analogies for 6 Git terms. Would you change any of them now? Which one? Why?", "communityPrompt": "Share your Git dictionary (or a section of it) in the community. Find one term where someone else's analogy is better than yours. Tell them. Specifically. 'Your analogy for [X] is better because [Y].' That's peer learning. That's the community working.", "closingQuestion": "Two weeks ago, when a developer said 'push your branch' — what did that mean to you? What does it mean to you now?"}, {"day": 15, "district": 3, "districtName": "The Solo Workflow", "title": "Start From Nothing", "isSunday": false, "idea": "Every Git repository starts with one command: git init\n\nBefore git init, your folder is just a folder. After git init, it becomes a living, breathing, history-tracking project that Git watches.\n\nThink of it like registering a business. Your shop existed before the registration. But until you registered it, no one officially knew it existed. git init is the registration.\n\nWhat actually happens when you run git init? Git creates a hidden folder called .git inside your project. That folder is the entire brain of your repository. Every commit. Every branch. Every piece of history. All of it lives inside .git.\n\nYou never touch .git manually. But knowing it exists explains everything Git does.\n\nTwo ways a repo starts:\ngit init        ← you start a brand new repo from scratch\ngit clone [url] ← you download an existing repo (Day 4)", "why": "As a QA engineer, there will be moments when:\n— You start a new automation project and need to version-control it\n— Your team asks you to set up the test repo\n— You inherit a folder of test scripts with no Git history\n\nAll three start with git init. Knowing this command means you are the person who sets the foundation — not the person who asks 'how do we start?'", "task": "Step 1 — Create a brand new empty folder on your desktop:\nmkdir my-qa-project\ncd my-qa-project\n\nStep 2 — Type: git init\nRead the output. Git tells you exactly what it did.\n\nStep 3 — Type: ls -la\nYou'll see the hidden .git folder. That folder is your entire repository history.\n\nStep 4 — Create a simple test file:\ntouch login.test.js\nOpen it and add two lines:\n// Login test file\n// Created on Day 15 of Git for Testers\n\nStep 5 — Type: git status\nGit sees your new file — but it's 'untracked.' Git is watching the folder but hasn't been asked to track this file yet.\n\nStep 6 — Screenshot your terminal showing git init output + git status showing untracked file. Post in community.", "reflection": "'Before today, I thought a Git repo was [X — something you download? something that exists on GitHub?]. Today I discovered that a repo starts with [Y — what did git init actually do?]. The thing that surprised me about the .git folder was [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git init — official documentation", "url": "https://git-scm.com/docs/git-init"}, {"label": "Article", "title": "What is inside the .git folder?", "url": "https://www.freecodecamp.org/news/understanding-git-basics-commands-tips-tricks/"}], "stretch": "Research: what is a bare repository (git init --bare)? When would a team use one instead of a regular repo? Write 3 sentences and post in the community.", "teaser": "Tomorrow you'll learn the exact sequence that every Git workflow in the world is built on — four steps, in order, every time."}, {"day": 16, "district": 3, "districtName": "The Solo Workflow", "title": "The Four-Step Rhythm", "isSunday": false, "idea": "Every solo Git workflow — no matter how complex it looks — is built on four steps repeated in a rhythm:\n\n1. Make a change       ← edit your files\n2. git status          ← confirm what changed\n3. git add [file]      ← move it to staging\n4. git commit -m \"\"    ← save the checkpoint\n\nThat's it. That's the loop. Make → Check → Stage → Commit. Over and over. Every day.\n\nThink of it like a QA test cycle:\nWrite test → Run test → Review result → Log result.\nSame rhythm. Different domain.\n\nThe mistake most beginners make is skipping step 2. They edit, add, and commit without checking status first. Then they commit the wrong files and spend an hour undoing it.\n\nCheck status. Every time. Without exception. It takes 2 seconds. It saves 20 minutes.", "why": "Muscle memory in Git comes from repetition of this exact loop. Not from memorising 50 commands.\n\nSenior engineers don't think about these four steps — they just do them. Like a QA engineer who doesn't think about how to write a test case anymore. It's automatic.\n\nYour goal for the next 30 days is to make this loop automatic. Today you do it consciously. By Day 45, you won't think about it.", "task": "You'll do the four-step loop five times today. Five commits. One after another.\n\nRound 1: Edit login.test.js → git status → git add login.test.js → git commit -m \"Add Round 1 comment to login test\"\n\nRound 2: Create checkout.test.js → add two lines → git status → git add checkout.test.js → git commit -m \"Add checkout test file - initial structure\"\n\nRound 3: Edit both files → git status (notice both files) → git add . → git commit -m \"Update login and checkout tests - Day 16 practice\"\n\nRound 4: Create README.md → add project description → git add README.md → git commit -m \"Add README with project description\"\n\nRound 5: Edit README.md → add one more line → full loop again\n\nThen: git log --oneline\nYou should see 5 commits. Screenshot it. Post in community: 'Five commits. One rhythm. This is all Git is.'", "reflection": "'Before today, the git add → git commit sequence felt [X — mechanical? confusing? slow?]. After doing it five times today I noticed [Y — did it get easier? faster? more automatic?]. The step I kept forgetting was [Z — be honest]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git add explained — all the options", "url": "https://git-scm.com/docs/git-add"}, {"label": "Article", "title": "Atomic commits — why small commits are better", "url": "https://www.freshconsulting.com/insights/blog/atomic-commits/"}], "stretch": "Research the difference between git add . (stages everything) and git add -p (stages changes interactively, chunk by chunk). Try git add -p on a file with multiple changes. When would this be more useful than git add .? Post your answer in the community.", "teaser": "Tomorrow you'll learn to read your project's entire history like a detective reading case notes — and find exactly when and why anything changed."}, {"day": 17, "district": 3, "districtName": "The Solo Workflow", "title": "Read The History Like A Detective", "isSunday": false, "idea": "A QA engineer's most powerful question is: 'What changed?'\n\nNot 'is it broken' — but 'what changed, when, and who changed it.' Because that question has a precise answer. And Git stores it permanently.\n\ngit log is your detective's notebook. Every commit is a case note: who, what, when, why.\n\nBut git log has versions — each one reveals more:\n\ngit log                    ← full detail (author, date, full message)\ngit log --oneline          ← one line per commit (fast overview)\ngit log --oneline --graph  ← visual branch map\ngit log -p                 ← shows exactly what changed in each commit\ngit log --author=\"Name\"    ← filter by who made the change\ngit log --since=\"2 weeks ago\" ← filter by when\n\nYou don't memorise all of these today. You learn that git log is a Swiss Army knife and you start using the blade you need.", "why": "In QA, you'll often need to answer: 'This test started failing on Tuesday — what changed?'\n\ngit log --since=\"3 days ago\" --oneline gives you every commit in that window.\n\nYou then look at each one with git show [commit-hash] and you find the exact line that broke the test.\n\nThis is not a developer skill. This is a QA superpower.", "task": "Use your my-qa-project from Day 16 (it has 5 commits).\n\nStep 1 — git log\nRead every field: commit hash, author, date, message. Notice the hash — that long string of letters and numbers. That's the commit's unique ID.\n\nStep 2 — git log --oneline\nCopy the hash of your second commit.\n\nStep 3 — git show [that hash]\nRead the output. Git shows you who, when, what the message was, and exactly which lines were added (green +) or removed (red -).\n\nStep 4 — git log -p --follow login.test.js\nThis shows the full history of ONE file. Every change, every commit, in order.\n\nStep 5 — git log --oneline --graph\nScreenshot this. Post in community: 'This is what git log tells you. Every team's history lives here.'", "reflection": "'Before today, I thought commit history was [X — just a list? not useful for QA?]. Today I discovered that git log can answer [Y — what specific question surprised you?]. As a QA engineer, the log command I'd use most in my real work is [Z — which one and why]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git log — all the options explained — Atlassian", "url": "https://www.atlassian.com/git/tutorials/git-log"}, {"label": "Article", "title": "git show — reading individual commits", "url": "https://git-scm.com/docs/git-show"}], "stretch": "Type: git log --pretty=format:\"%h - %an, %ar : %s\". Break down what each placeholder means. Build your own custom format. What would be most useful to you? Post it in the community.", "teaser": "Tomorrow you'll learn what to do when you realise you committed something you shouldn't have — and discover that Git almost never truly deletes anything."}, {"day": 18, "district": 3, "districtName": "The Solo Workflow", "title": "Undo Without Fear", "isSunday": false, "idea": "The question every Git beginner has but is afraid to ask: 'What if I mess something up? Can I undo it?'\n\nYes. Almost always. Here's the map:\n\nSITUATION 1: I edited a file but haven't staged it yet.\nFIX: git restore [filename]\n\nSITUATION 2: I staged a file but haven't committed yet.\nFIX: git restore --staged [filename]\n\nSITUATION 3: I committed but want to redo the commit message.\nFIX: git commit --amend -m \"Better message here\"\n(Only do this if you haven't pushed yet.)\n\nSITUATION 4: I committed something wrong and want to undo the commit.\nFIX: git revert [commit-hash]\n(Creates a NEW commit that undoes the old one. Safe. History preserved.)\n\nSITUATION 5: I want to go back in time completely.\nFIX: git reset --hard [commit-hash]\n(Dangerous. Rewrites history. Never use on shared branches.)\n\nRule of thumb: revert = safe. reset --hard = dangerous.", "why": "The fear of 'breaking something permanently' is what keeps most beginners from using Git confidently.\n\nOnce you know the undo map, that fear disappears. Git is one of the safest tools you'll ever use — because it almost never truly deletes anything.\n\nKnowing how to undo makes you bolder. Bolder means more commits. More commits means better history. Better history means safer, more maintainable test code.", "task": "Practice all four safe undo scenarios today.\n\nScenario 1: Edit login.test.js → add '// MISTAKE' → git status → git restore login.test.js → file reverts.\n\nScenario 2: Edit checkout.test.js → git add checkout.test.js → git status (it's staged) → git restore --staged checkout.test.js → back to modified.\n\nScenario 3: Make a small change → commit with bad message 'asdfgh' → git commit --amend -m \"Fix: update checkout test placeholder\" → git log --oneline (old message gone).\n\nScenario 4: git log --oneline (copy a hash) → git revert [hash] --no-edit → git log --oneline → notice the revert added a NEW commit. Old one still there.\n\nScreenshot your git log after all four scenarios. Post in community: 'Git undo is not scary. Here's the map.'", "reflection": "'Before today, making a mistake in Git felt [X — permanent? terrifying? confusing?]. Today I practised [Y — how many undo scenarios?] different undo methods and noticed that [Z — what surprised you about how Git handles mistakes?]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Undoing things in Git — official book", "url": "https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things"}, {"label": "Article", "title": "git revert vs git reset — know the difference", "url": "https://www.atlassian.com/git/tutorials/resetting-checking-out-and-reverting"}], "stretch": "Research git reflog. This is Git's secret safety net — it records every action you've ever taken, even ones that seem to have vanished. When would you use reflog to recover something? Post a real scenario in the community.", "teaser": "Tomorrow you'll learn to see exactly what changed between two versions of a file — the same way a code reviewer does."}, {"day": 19, "district": 3, "districtName": "The Solo Workflow", "title": "See Exactly What Changed", "isSunday": false, "idea": "In QA, you raise a bug report that says: 'The login button behaviour changed between build 4.1 and 4.2.' The developer asks: 'What exactly changed?'\n\nWith Git, you don't guess. You show them.\n\ngit diff is Git's comparison tool. It shows you the exact lines that were added, removed, or changed — highlighted in green (added) and red (removed).\n\nFour versions you'll use constantly:\n\ngit diff                        ← what changed since last commit (unstaged)\ngit diff --staged               ← what's staged and ready to commit\ngit diff [hash1] [hash2]        ← compare any two commits\ngit diff main feature/branch    ← compare two branches\n\nThe output:\n+ green line  = this line was added\n- red line    = this line was removed", "why": "This is a direct QA skill.\n\nBefore approving a PR (pull request), you review what changed. git diff is how you do that locally.\n\nWhen a test starts failing after a deployment, git diff HEAD~1 HEAD shows you every change between the last commit and the one before it.\n\nYou stop asking 'what changed?' and start showing people. That shift changes how the team sees you.", "task": "Step 1 — Edit login.test.js: change the comment on line 1 to something different. Don't stage yet.\n\nStep 2 — git diff\nRead the output. Red line = what was there. Green line = what's there now. Screenshot.\n\nStep 3 — git add login.test.js\nNow type: git diff\nNothing shows — diff without --staged only shows unstaged changes.\n\nStep 4 — git diff --staged\nNow you see it. Staged changes appear here. This is what you're about to commit.\n\nStep 5 — Commit the change.\n\nStep 6 — Compare two commits:\ngit log --oneline (copy hashes of any two commits)\ngit diff [older hash] [newer hash]\nRead the comparison. Every change between those two points.\n\nStep 7 — Post your favourite diff screenshot in community. Annotate it: 'Green = added. Red = removed. This is how I review changes now.'", "reflection": "'Before today, when I wanted to know what changed in a file I would [X — open it and look? ask someone?]. Today I learned that git diff shows [Y — what specifically surprised you about the output?]. As a QA engineer, I can see myself using this when [Z — name a real scenario from your work]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git diff — all options explained — Atlassian", "url": "https://www.atlassian.com/git/tutorials/saving-changes/git-diff"}, {"label": "Article", "title": "Reading diff output — a plain English guide", "url": "https://git-scm.com/docs/git-diff"}], "stretch": "Research: git diff --word-diff. Instead of showing full line changes, it highlights the exact words that changed within a line. Try it on a file where you changed one word in a long line. When is word-diff more useful than regular diff?", "teaser": "Tomorrow you'll run your complete solo workflow from start to finish — no instructions, no hints — and discover how much you've actually internalised."}, {"day": 20, "district": 3, "districtName": "The Solo Workflow", "title": "Run It Without Instructions", "isSunday": false, "idea": "There's a difference between following instructions and actually knowing something.\n\nYou've followed instructions for 5 days. Today you run the workflow from memory.\n\nNo step-by-step guide. Just a scenario. You figure out which commands to use.\n\nThis is how learning becomes skill. A flight simulator doesn't tell the pilot which buttons to press. It gives them a situation and watches what they do.\n\nToday is your flight simulator.\n\nIf you get stuck, that's not failure — it's diagnosis. It tells you exactly which part of the workflow needs one more repetition.\n\nWrite down every command you use. Notice which ones you reached for confidently and which ones you had to think about. That list is your personal practice plan for District 4.", "why": "Real Git usage is never guided. No one hands you a step-by-step at work. A developer says 'push your test updates to the feature branch' and you just do it.\n\nToday's build is the closest thing to that real scenario. Completing it — even imperfectly — proves the workflow is yours.", "task": "SCENARIO: You've been asked to start a new test project for a checkout feature you're testing on Sauce Demo.\n\nHere's what needs to happen (no step-by-step — figure out the commands):\n1. Create a new folder called checkout-qa\n2. Initialise it as a Git repo\n3. Create three files: checkout.test.js, cart.test.js, README.md\n4. Add meaningful placeholder content to each file (at least 3 lines per file)\n5. Make THREE separate commits — one per file with a meaningful message for each\n6. Check the full history using git log\n7. Make one change to checkout.test.js\n8. Compare the change using git diff\n9. Stage it and confirm using git diff --staged\n10. Commit the change\n\nWHEN DONE: Run git log --oneline — you should have 4 commits total. Screenshot your log. Post in community: 'Here's what I built from memory today.'", "reflection": "'Going into today I felt [X — confident? nervous? uncertain about specific parts?]. The commands I reached for easily were [Y — list them]. The commands I had to think about or look up were [Z — be honest, name them]. Based on today, the one thing I want to practise more before District 4 is [W].'", "further": [{"label": "Article", "title": "Go back to whichever day felt shakiest today and re-read The Idea section", "url": "https://git-scm.com/book/en/v2"}], "stretch": "Add a .gitignore file to your checkout-qa project. Research: what does .gitignore do? Add at least 3 entries that make sense for a JavaScript test project. (Hint: node_modules is always one of them.)", "teaser": "Tomorrow is Sunday — and the reflection question will ask you something that no tutorial ever asks but every QA engineer should be able to answer."}, {"day": 21, "district": 3, "districtName": "The Solo Workflow", "title": "You Can Work Alone Now", "isSunday": true, "recapPrompt": "Look back at your 6 reflections from this week. Then write:\n\n— On Day 20, you ran the workflow without instructions. What did that feel like compared to Day 4, when you typed git status for the first time?\n— List every Git command you used this week from memory — without looking at your notes. Count them. That number is not a score. It's a snapshot.\n— Which day this week gave you the most confidence? Which gave you the most friction? What does that tell you about what to practise more?", "communityPrompt": "Post your Day 20 git log screenshot if you haven't already. Find someone else's post and leave a specific observation — not 'great work!' but something real: 'I noticed you committed each file separately — that's the atomic commit habit. That's professional.'", "closingQuestion": "If a developer handed you a broken test repo right now and said 'figure out what changed in the last three days' — could you do it?"}, {"day": 22, "district": 4, "districtName": "The Team Workflow", "title": "GitHub Is Not Git", "isSunday": false, "idea": "Most beginners use 'Git' and 'GitHub' interchangeably. They are not the same thing.\n\nGit = the tool installed on your machine. It tracks history. It knows nothing about the internet. It existed before GitHub.\n\nGitHub = a website that hosts Git repositories. It adds collaboration features on top of Git: Pull Requests, Issues, Actions, code review, comments. GitHub is one option. GitLab and Bitbucket are others.\n\nThe relationship:\nGit is the engine.\nGitHub is the car built around it.\n\nYou can use Git without GitHub (local only). You cannot use GitHub without Git underneath it.\n\nWhy does this matter? Because when something goes wrong, you need to know whether the problem is in Git (your local tool) or in GitHub (the remote platform). They have different fixes.", "why": "In your team, developers will say things like:\n'The pipeline failed on GitHub' — that's a GitHub problem.\n'I can't push' — that's likely a Git problem.\n'The PR has conflicts' — that's a Git problem surfaced on GitHub.\n\nKnowing which layer the problem lives in means you diagnose faster and ask better questions.", "task": "Step 1 — Go to github.com. Log in. Click your profile photo → Your repositories.\n\nStep 2 — Create a brand new repository on GitHub:\nClick 'New' → Name it: git-for-testers-practice\nCheck: 'Add a README file'\nClick 'Create repository'\n\nStep 3 — Clone it to your machine:\ngit clone [the URL GitHub gives you]\ncd git-for-testers-practice\n\nStep 4 — Open the README.md on your machine. Make a change: add '## My QA Notes' as a heading. Save. Add. Commit.\n\nStep 5 — Push it back:\ngit push origin main\n\nStep 6 — Refresh the GitHub page in your browser. Your change is there. Screenshot both: your terminal push output AND the updated GitHub page. Post in community: 'Git is the engine. GitHub is the car.'", "reflection": "'Before today, I used Git and GitHub as if they were [X — the same thing?]. Today I discovered the real difference is [Y — your own words]. The moment the distinction clicked for me was [Z — describe it]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Git vs GitHub — the real difference", "url": "https://www.geeksforgeeks.org/difference-between-git-and-github/"}, {"label": "Article", "title": "GitHub quickstart — official guide", "url": "https://docs.github.com/en/get-started/quickstart"}], "stretch": "Research the two other major Git hosting platforms: GitLab and Bitbucket. Build a 3-row comparison table: Platform | Owned By | Best Known For | Free Tier? Post it in the community.", "teaser": "Tomorrow you'll learn the feature that makes GitHub the most powerful collaboration tool in software — and it's not what most beginners think it is."}, {"day": 23, "district": 4, "districtName": "The Team Workflow", "title": "The Pull Request Is A Conversation", "isSunday": false, "idea": "A Pull Request (PR) is not just a way to merge code. It is a structured conversation about a change — before that change becomes permanent.\n\nHere's the flow:\n1. Developer creates a feature branch\n2. Makes commits on that branch\n3. Opens a PR on GitHub: 'I want to merge this into main'\n4. Team reviews the code, leaves comments, asks questions\n5. Developer responds, makes fixes, pushes more commits\n6. Someone approves it\n7. It gets merged into main\n\nThe PR is steps 3–6. That conversation. The diff, the comments, the approvals — all of it lives in the PR permanently. It's a paper trail of every decision your team makes.\n\nAs a QA engineer, PRs are where you belong. Not just reading them — contributing to them. Your job is to review the change and ask: 'Will this break anything I'm testing?'", "why": "Most QA engineers find out about changes after they're merged. Then they scramble to update tests, chase developers, and raise bugs that could have been caught earlier.\n\nQA engineers who review PRs find those issues before merge. They become the safety net the team relies on — not the person cleaning up after the fact.\n\nPRs are where QA shifts left. This is what 'shift left testing' actually looks like in practice.", "task": "Step 1 — In your git-for-testers-practice repo (local):\ngit checkout -b feature/add-test-notes\n\nStep 2 — Create a new file: test-notes.md\nAdd 5 lines of QA-related content.\n\nStep 3 — Stage, commit, then push the BRANCH to GitHub:\ngit add test-notes.md\ngit commit -m \"Add initial QA test notes\"\ngit push origin feature/add-test-notes\n\nStep 4 — Go to GitHub. You'll see a yellow banner. Click 'Compare & pull request'.\n\nStep 5 — Fill in the PR form:\nTitle: 'Add QA test notes for login and checkout'\nDescription: Write what changed and why.\nClick 'Create pull request'\n\nStep 6 — Look at the PR page carefully: the Commits tab, the Files changed tab, the conversation area. Screenshot all three tabs. Post in community: 'This is my first PR. Here's what it contains.'", "reflection": "'Before today, I thought a pull request was [X — just merging code? a developer thing?]. Today I created my first PR and noticed [Y — what did you see in the Files changed tab?]. As a QA engineer, I can add value to a PR by [Z — be specific]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "About pull requests — GitHub Docs", "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests"}, {"label": "Article", "title": "How to write a great PR description — Atlassian", "url": "https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests"}], "stretch": "Research: what is a PR template? Many teams have a .github/PULL_REQUEST_TEMPLATE.md file. Design a PR template specifically for QA engineers — what would YOUR checklist include before merging? Post it in the community.", "teaser": "Tomorrow you'll learn how to leave a code review comment that developers actually want to receive — and one that marks you as a professional, not a critic."}, {"day": 24, "district": 4, "districtName": "The Team Workflow", "title": "Review Code Like A QA Engineer", "isSunday": false, "idea": "Code review is not about finding fault. It's about asking: 'Will this work the way we expect?'\n\nAs a QA engineer reviewing a PR, your lens is different from a developer's lens. Developers ask: 'Is this correct code?' You ask: 'Will this break anything I'm testing? Does this match the acceptance criteria? Are there edge cases this doesn't handle?'\n\nThree types of PR comments:\n\nBLOCKING (must fix before merge):\n'This change removes the error message on failed login. Our test suite asserts on that message — this will break 3 tests.'\n\nSUGGESTION (non-blocking, worth considering):\n'Consider adding a null check here — our test data includes empty cart scenarios.'\n\nOBSERVATION (no action needed, just noting):\n'I notice this renames the button ID. I'll update our selector in the test suite after merge.'", "why": "When you review PRs, you:\n— Catch test-breaking changes before they hit main\n— Build relationships with developers as a collaborator, not a gatekeeper\n— Understand the codebase at a level most QA engineers never reach\n— Shift your entire role from reactive to proactive\n\nThis is the single habit that separates a junior QA engineer from a senior one more than any technical skill.", "task": "Step 1 — Go to your open PR from Day 23 on GitHub. Click 'Files changed' tab.\n\nStep 2 — Hover over any line. A blue + button appears. Click it. A comment box opens inline.\n\nStep 3 — Leave three comments on your own PR:\n— One BLOCKING comment (pretend there's an issue)\n— One SUGGESTION comment\n— One OBSERVATION comment\nLabel each one clearly: [BLOCKING], [SUGGESTION], [OBSERVATION]\n\nStep 4 — Click 'Review changes' (top right). Write a summary comment. Select 'Comment'. Submit the review.\n\nStep 5 — Go to the Conversation tab. Read your review as if you were the developer receiving it. Is it helpful? Specific? Kind?\n\nStep 6 — Screenshot your review. Post in community: 'This is what QA code review looks like. Three comment types. One lens.'", "reflection": "'Before today, I thought code review was [X — only for developers? about finding bugs?]. Today I left my first PR review and noticed [Y — how did it feel to review your own code?]. The comment type I'd use most as a QA engineer is [Z — blocking/suggestion/observation, and why]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "How to do a code review — Google Engineering Practices", "url": "https://google.github.io/eng-practices/review/reviewer/"}, {"label": "Article", "title": "Conventional Comments standard", "url": "https://conventionalcomments.org/"}], "stretch": "Research 'Conventional Comments' — a standard format for writing PR comments that removes ambiguity. How does this format map to the three comment types from today? Post a before/after example in the community.", "teaser": "Tomorrow you'll merge your first PR — and learn the three different ways teams merge code and why choosing the wrong one can make your history a mess forever."}, {"day": 25, "district": 4, "districtName": "The Team Workflow", "title": "Three Ways To Merge. One Right Choice.", "isSunday": false, "idea": "When you merge a PR on GitHub, there's a dropdown with three options. Most beginners click the first one without knowing what the others do.\n\nOPTION 1: Merge commit\nCreates a new 'merge commit' that ties the branch to main. History shows every commit from your branch + a merge commit. Result: complete history, slightly cluttered.\n\nOPTION 2: Squash and merge\nCombines ALL your branch commits into ONE single commit on main. Your 6 messy 'WIP' commits become one clean commit. Result: clean main history.\nUse when: your branch commits are messy and the team only cares about the final result.\n\nOPTION 3: Rebase and merge\nReplays your commits on top of main, one by one. No merge commit. Linear history.\nUse when: your team values a perfectly linear history.\n\nMost QA teams use Squash and merge. It keeps main clean and readable.", "why": "When a test fails after a deployment, you look at the commit history on main to find the cause.\n\nIf main has 47 'WIP', 'fix', 'fix again' commits from one feature branch — finding the cause is painful. If main has one clean commit per feature — you find the cause in seconds.\n\nClean merge history is a QA engineer's best friend. Advocating for squash merges is a contribution most QA engineers don't know they can make.", "task": "Step 1 — Go to your open PR from Day 23 on GitHub.\n\nStep 2 — Make one more commit to your branch:\ngit checkout feature/add-test-notes\nEdit test-notes.md — add one more line.\ngit add . && git commit -m \"Add logout test observation\"\ngit push origin feature/add-test-notes\n\nStep 3 — Refresh your PR. You'll see 2 commits now.\n\nStep 4 — Click the dropdown arrow next to the green merge button. Read all three options carefully.\n\nStep 5 — Select 'Squash and merge.' Edit the squash commit message to be clean and meaningful. Click 'Confirm squash and merge.'\n\nStep 6 — Go to your main branch on GitHub → click 'commits.' Your squash commit is there — one clean entry.\n\nStep 7 — Locally: git checkout main && git pull origin main → git log --oneline. Screenshot and post: 'Two commits in. One clean commit out. This is squash merge.'", "reflection": "'Before today, I thought merging a PR meant [X — just clicking merge?]. Today I discovered there are three ways to merge and the difference is [Y]. For a QA team managing test scripts, I would choose [Z — which merge strategy and why]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "About merge methods on GitHub", "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github"}, {"label": "Article", "title": "Merge vs Squash vs Rebase — plain English", "url": "https://www.atlassian.com/git/tutorials/merging-vs-rebasing"}], "stretch": "Research: how do you protect the main branch on GitHub? Branch protection rules can enforce PRs required before merging, at least 1 approval required, and status checks must pass. Set up branch protection on your practice repo. Screenshot the settings. Post in community.", "teaser": "Tomorrow you'll handle the scenario every QA engineer dreads — a conflict in a pull request — and you'll resolve it without panic."}, {"day": 26, "district": 4, "districtName": "The Team Workflow", "title": "Conflicts In PRs Are Not Emergencies", "isSunday": false, "idea": "You open a PR. GitHub shows a red banner: 'This branch has conflicts that must be resolved.'\n\nMost beginners freeze. Some message a developer in a panic. Neither is necessary.\n\nA conflict in a PR means exactly one thing: The same part of a file was changed in two places — on your branch AND on main — since your branch was created. Git doesn't know which version to keep. So it asks you.\n\nTwo ways to resolve a PR conflict:\n\nWAY 1: Resolve on GitHub (browser)\nGitHub has a built-in conflict editor. Click 'Resolve conflicts' → edit the file → mark as resolved → commit. Good for small conflicts.\n\nWAY 2: Resolve locally (terminal)\ngit checkout your-branch\ngit merge main\nOpen the conflicted file, fix it, save\ngit add . && git commit\ngit push\nGood for complex conflicts.\n\nThe resolution is identical to Day 6: Delete the conflict markers. Keep the right code. Commit.", "why": "Conflicts happen constantly in active teams. The QA engineer who can resolve their own PR conflicts without involving a developer is the one developers trust with more responsibility.\n\nConflict resolution is not a senior skill. It's a basic team survival skill. You learn it now so it's never a crisis later.", "task": "Step 1 — Create a new branch:\ngit checkout main\ngit checkout -b feature/conflict-practice\n\nStep 2 — Edit README.md line 1. Change it to a 'branch version.' Commit and push.\n\nStep 3 — Simulate a teammate editing main:\ngit checkout main\nEdit README.md line 1 to a 'main version.'\ngit add . && git commit -m \"Update README title on main\"\ngit push origin main\n\nStep 4 — Go to GitHub. Create a PR from feature/conflict-practice → main. GitHub will show: 'Can't automatically merge.'\n\nStep 5 — Click 'Resolve conflicts.' Edit in the browser editor. Delete all conflict markers. Click 'Mark as resolved' → 'Commit merge.'\n\nStep 6 — Your PR is now mergeable. Screenshot the resolved PR. Post in community: 'Conflicts are decisions. Here's how I made mine.'", "reflection": "'Before today, a conflict in a PR made me feel [X]. Today I created and resolved one deliberately and discovered [Y — what made it less scary?]. The step I want to remember is [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Resolving merge conflicts on GitHub", "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-on-github"}, {"label": "Article", "title": "Resolving conflicts locally — Atlassian", "url": "https://www.atlassian.com/git/tutorials/using-branches/merge-conflicts"}], "stretch": "Research: what is git rerere? (It stands for 'reuse recorded resolution.') Git can remember how you resolved a conflict and apply that same resolution automatically next time. When would this be useful in a QA team? Post your answer in the community.", "teaser": "Tomorrow you'll learn the workflow that every open source project in the world runs on — and that most QA engineers have never been taught."}, {"day": 27, "district": 4, "districtName": "The Team Workflow", "title": "Fork It. Own It. PR It Back.", "isSunday": false, "idea": "So far you've been working inside a repo you own. But what happens when you want to contribute to a repo you don't own — or don't have write access to?\n\nThat's what forking is for.\n\nA fork = your own personal copy of someone else's repo, living in your GitHub account.\n\nThe workflow:\n1. Fork the repo (copies it to your GitHub account)\n2. Clone YOUR fork to your machine\n3. Create a branch, make changes, commit, push\n4. Open a PR from your fork → the original repo\n\nThis is called the Fork and PR workflow. Every major open source project uses it.\n\nThe key distinction:\nClone = download to your machine (no copy on GitHub)\nFork = copy to your GitHub account (then clone from there)", "why": "In many companies, QA engineers don't have direct write access to the main application repo. They fork it, add their test files, and PR them back.\n\nUnderstanding forks also means you can contribute to open source test frameworks, report issues with PRs, and build a public portfolio of QA work on GitHub.\n\nYour GitHub profile is your CV. Forks and PRs are the evidence on it.", "task": "Step 1 — Go to the cohort practice repo on GitHub: https://github.com/PLACEHOLDER/git-for-testers-practice\n\nStep 2 — Click the 'Fork' button (top right). GitHub creates a copy under YOUR account.\n\nStep 3 — Clone YOUR fork (not the original):\ngit clone https://github.com/yourusername/practice-repo\ncd practice-repo\n\nStep 4 — Check your remotes:\ngit remote -v\nYou'll see origin pointing to YOUR fork.\n\nStep 5 — Add the original repo as 'upstream':\ngit remote add upstream [original repo URL]\ngit remote -v again — now you see both origin and upstream.\n\nStep 6 — Create a branch, make a change, commit, and push to YOUR fork:\ngit checkout -b feature/my-qa-contribution\ngit push origin feature/my-qa-contribution\n\nStep 7 — Go to GitHub. Open a PR from your fork's branch → the original repo's main. Write a proper PR description. Screenshot the PR. Post in community: 'First fork → PR workflow complete.'", "reflection": "'Before today, I thought forking meant [X — copying? breaking something?]. Today I discovered that a fork is actually [Y — your own words]. The moment the fork vs clone distinction clicked for me was [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Fork a repository — GitHub Docs", "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo"}, {"label": "Article", "title": "Keeping your fork synced with upstream", "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork"}], "stretch": "Research: how do you keep your fork up to date when the original repo has new commits? Practice: git fetch upstream → git checkout main → git merge upstream/main → git push origin main. Post the command sequence in the community with an explanation of each step.", "teaser": "Tomorrow is Sunday — and the reflection question will ask you to map the entire team workflow from the moment a developer starts coding to the moment a QA engineer signs it off."}, {"day": 28, "district": 4, "districtName": "The Team Workflow", "title": "You Work In Teams Now", "isSunday": true, "recapPrompt": "Map the complete team Git workflow from memory. No notes. Just draw or write the steps:\n\nDeveloper starts work → [what happens next?] → [and next?] → QA engineer gets involved at [which point?] → [what does QA do?] → Code reaches main → [what does QA do after merge?]\n\nWrite as many steps as you can remember. Then check your notes. What did you miss? That gap is what District 5 will strengthen.", "communityPrompt": "Find one open source repository on GitHub that has a test folder. Look at the open PRs. Find one PR that has a meaningful description. Share the link in the community with one sentence: 'This PR is well-written because [specific reason].'", "closingQuestion": "Before this district, where did QA fit in the Git workflow? Where does QA fit now — in your mind?"}, {"day": 29, "district": 5, "districtName": "The Branch", "title": "Your Team Needs A Branching Strategy", "isSunday": false, "idea": "Imagine a team of 6 people all creating branches with no agreed naming, no agreed rules, no agreement on what gets merged where or when.\n\nWithin two weeks: chaos. Branches named 'fix', 'test2', 'johns-branch', 'FINAL'. Nobody knows what's safe to merge. Nobody knows what's been tested.\n\nA branching strategy is a team agreement. It answers three questions:\n1. What branches exist permanently?\n2. Where does new work start from?\n3. Where does finished work go?\n\nTwo strategies dominate real teams:\n\nGITFLOW — structured, release-based:\nmain = production code only\ndevelop = integration branch, always deployable\nfeature/* = one branch per feature, branches off develop\nrelease/* = prep for a release\nhotfix/* = emergency fix, branches off main\n\nTRUNK-BASED — fast, continuous:\nmain = the only permanent branch\nfeature/* = short-lived, merged within 1–2 days\nNo develop. No release branches.", "why": "As a QA engineer, branching strategy determines WHEN you test and WHAT you test on.\n\nIn GitFlow: you test on the release branch before it hits main.\nIn Trunk-Based: you test on main continuously — often automated.\n\nKnowing your team's strategy means you know where to check out code from, where to push test updates, and where to raise a flag when something's wrong.\n\nWithout this knowledge, you're always asking a developer 'which branch should I test on?' With it, you already know.", "task": "Step 1 — Draw a diagram of GitFlow on paper or Notion. Label every branch. Draw arrows showing where branches come from and where they merge to.\n\nStep 2 — Now draw Trunk-Based Development. Compare the two diagrams side by side.\n\nStep 3 — In your git-for-testers-practice repo, simulate a simplified GitFlow structure:\ngit checkout main\ngit checkout -b develop\ngit push origin develop\n\ngit checkout develop\ngit checkout -b feature/login-test-update\ngit push origin feature/login-test-update\n\ngit checkout develop\ngit checkout -b feature/checkout-test-update\ngit push origin feature/checkout-test-update\n\nStep 4 — Go to GitHub. Click the branch dropdown. You'll see all your branches. Screenshot the branch list. Post in community with your diagram: 'This is what a branching strategy looks like in a real repo.'", "reflection": "'Before today, my team's branching approach felt [X — random? confusing? invisible?]. Today I mapped out two strategies and noticed [Y — what was the biggest difference?]. For my current QA role, the strategy that makes more sense is [Z — GitFlow or Trunk, and why]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "GitFlow explained — the original post by Vincent Driessen", "url": "https://nvie.com/posts/a-successful-git-branching-model/"}, {"label": "Article", "title": "Trunk-based development — the case for simplicity", "url": "https://trunkbaseddevelopment.com/"}], "stretch": "Research: what is a 'release branch' in GitFlow? What does a QA engineer do on a release branch specifically? Write a 5-step QA process for what happens between 'release branch created' and 'merged to main.' Post it in the community.", "teaser": "Tomorrow you'll learn the command that rewrites history — not to cheat, but to tell a cleaner story."}, {"day": 30, "district": 5, "districtName": "The Branch", "title": "Rebase: Telling A Cleaner Story", "isSunday": false, "idea": "When you merge a branch into main, Git creates a merge commit. That commit says: 'These two timelines joined here.' Your history looks like a river with tributaries.\n\nWhen you rebase instead, Git takes your commits and replays them on top of the latest main — one by one. The result: a perfectly straight, linear history. No merge commit. No tributaries. One clean river.\n\nHere's the mental model:\n\nBEFORE REBASE:\nmain:    A → B → C\nbranch:  A → B → X → Y\n\nAFTER REBASE (branch onto main):\nmain:    A → B → C\nbranch:  A → B → C → X → Y\n(X and Y are replayed on top of C)\n\nThe command:\ngit checkout feature/my-branch\ngit rebase main\n\nOne golden rule: never rebase a branch that other people are also working on. Rebase rewrites commit hashes. If your teammate has the old hashes, their repo breaks. Rebase your OWN branch. Never a shared one.", "why": "Clean history is a QA engineer's best debugging tool. When tests fail after a deployment, you read the commit history to find the cause.\n\nA rebased, linear history reads like a book: 'Fixed login timeout → Added checkout validation → Updated test selectors'\n\nA merged history with dozens of merge commits reads like a legal document. Nobody wants to debug in a legal document.\n\nUnderstanding rebase also means you can answer when a developer says 'can you rebase your test branch on develop?' — and just do it, confidently.", "task": "Step 1 — Check out your feature/login-test-update branch:\ngit checkout feature/login-test-update\n\nStep 2 — Make two commits on this branch:\nEdit README.md: add '## Login Test Notes'\ngit add . && git commit -m \"Add login test notes section\"\nEdit README.md again: add one bullet point\ngit add . && git commit -m \"Add first login test observation\"\n\nStep 3 — Make a commit on develop to simulate team progress:\ngit checkout develop\nEdit README.md: add '## Project Status: Active'\ngit add . && git commit -m \"Update project status on develop\"\n\nStep 4 — Go back to your feature branch and rebase onto develop:\ngit checkout feature/login-test-update\ngit rebase develop\n\nStep 5 — git log --oneline --graph\nYour two feature commits now sit cleanly on top of the develop commit. No merge commit. Screenshot this.\n\nStep 6 — Post your screenshot + diagram in community: 'Rebase doesn't change WHAT happened. It changes HOW it reads.'", "reflection": "'Before today, rebase sounded [X — dangerous? confusing? like something to avoid?]. Today I ran git rebase and the result was [Y — describe what the log looked like]. The golden rule I will never forget is [Z — rebase your own branch, never shared ones]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Merging vs rebasing — the definitive guide", "url": "https://www.atlassian.com/git/tutorials/merging-vs-rebasing"}, {"label": "Article", "title": "git rebase — official documentation", "url": "https://git-scm.com/docs/git-rebase"}], "stretch": "Research: interactive rebase — git rebase -i. This lets you rewrite your last N commits: squash multiple commits into one, reword commit messages, reorder commits, drop commits entirely. Try: git rebase -i HEAD~2. What does the editor show you? Post your experience in the community.", "teaser": "Tomorrow you'll learn to pick exactly ONE commit from another branch and apply it to yours — without taking everything else with it."}, {"day": 31, "district": 5, "districtName": "The Branch", "title": "Cherry-Pick: Take Just What You Need", "isSunday": false, "idea": "Imagine a developer fixed a critical bug on a feature branch that's not ready to merge yet. But you need that fix on main right now — today. You can't merge the whole branch. It's half-finished.\n\nThis is exactly what cherry-pick solves.\n\ngit cherry-pick [commit-hash]\n\nIt takes ONE specific commit from anywhere in your history and applies it to your current branch. Just that commit. Nothing else.\n\nLike a fruit picker who takes only the ripe ones and leaves the unripe ones on the tree.\n\nReal QA scenario: A developer branches off develop to build a new checkout flow. Halfway through, they fix a test selector bug in commit abc123. Your test suite needs that fix NOW — not in two weeks when the feature ships.\n\nYou cherry-pick abc123 onto your test branch. The fix is yours. The unfinished feature stays on their branch.\n\nThe command sequence:\ngit log --oneline              ← find the commit hash you want\ngit checkout target-branch     ← go where you want to apply it\ngit cherry-pick [hash]         ← apply just that commit", "why": "In QA, you often maintain a test branch that needs to stay current with bug fixes — even when features aren't ready.\n\nCherry-pick lets you be surgical. Take the fix. Leave the noise.\n\nSurgical precision. That's the QA mindset. Cherry-pick is the Git command that matches it.", "task": "Step 1 — On feature/checkout-test-update, make two commits:\ngit checkout feature/checkout-test-update\n\nFirst commit:\nCreate checkout-helpers.js\nAdd: // Shared helper for checkout tests\ngit add . && git commit -m \"Add checkout test helper file\"\n\nSecond commit:\nEdit checkout-helpers.js: add a second comment line\ngit commit -am \"Add second helper note - WIP\"\n\nStep 2 — Get the hash of ONLY the first commit:\ngit log --oneline\nCopy the hash of 'Add checkout test helper file'\n\nStep 3 — Switch to feature/login-test-update:\ngit checkout feature/login-test-update\n\nStep 4 — Cherry-pick just that one commit:\ngit cherry-pick [hash]\n\nStep 5 — git log --oneline\nYour cherry-picked commit is now on the login branch. The WIP commit stayed behind.\n\nStep 6 — Screenshot your two git logs side by side. Post in community: 'Cherry-pick: I took one commit. Left the rest. This is surgical Git.'", "reflection": "'Before today, I didn't know it was possible to [X — take one commit without the rest?]. Today I cherry-picked a commit and the thing that surprised me was [Y]. A real scenario in my QA work where I'd use this is [Z — describe it specifically]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git cherry-pick — Atlassian guide", "url": "https://www.atlassian.com/git/tutorials/cherry-pick"}, {"label": "Article", "title": "git cherry-pick — official documentation", "url": "https://git-scm.com/docs/git-cherry-pick"}], "stretch": "What happens when you cherry-pick a commit that conflicts with your current branch? Simulate it: make the same line different on both branches → try to cherry-pick → read the conflict output → resolve it using what you learned on Day 26. Post your resolution steps in the community.", "teaser": "Tomorrow you'll learn the Git command that saves you when you're in the middle of something and suddenly need to drop everything and switch tasks."}, {"day": 32, "district": 5, "districtName": "The Branch", "title": "Stash: Put It Down, Pick It Up Later", "isSunday": false, "idea": "You're halfway through updating a test file. Uncommitted changes everywhere. Suddenly: 'Can you check the hotfix branch right now? There's a critical bug.'\n\nYou can't commit half-finished work. You can't throw it away either. You need to put it down cleanly and pick it up later.\n\nThat's git stash.\n\ngit stash takes all your uncommitted changes — staged and unstaged — and puts them in a temporary holding area. Your working directory goes back to the last clean commit. You switch branches, do your urgent work, come back. Then: git stash pop — your changes are back exactly as you left them.\n\nThe four commands you need:\n\ngit stash                    ← save current changes, clean the directory\ngit stash list               ← see all stashed changesets\ngit stash pop                ← restore the most recent stash (and delete it)\ngit stash drop               ← delete a stash without restoring it\n\nThink of it like putting your work-in-progress into a desk drawer so you can clear your desk for an urgent task.", "why": "Context switching is daily life in QA. You're updating regression tests when a P1 bug lands. You're halfway through a script when someone needs you to verify a hotfix immediately.\n\nWithout stash: you either commit broken code or lose your work by checking out a different branch.\n\nWith stash: one command, clean switch, back in 30 seconds. It's one of the most practical Git commands you'll ever use — and one of the most underused by beginners.", "task": "Step 1 — On your feature/login-test-update branch:\nEdit README.md — add 3 lines of content. Do NOT stage or commit.\ngit status — confirm you have unstaged changes.\n\nStep 2 — Stash them:\ngit stash\ngit status — your working directory is clean.\nOpen README.md — your 3 lines are gone (safely stored).\n\nStep 3 — Simulate switching to fix an urgent issue:\ngit checkout develop\nMake a small change. Commit it.\ngit checkout feature/login-test-update\n\nStep 4 — Restore your stashed work:\ngit stash pop\nOpen README.md — your 3 lines are back.\ngit status — changes are unstaged, exactly as before.\n\nStep 5 — Try named stashes:\ngit stash push -m \"WIP: login test selector updates\"\ngit stash list\nYou'll see your stash with a readable name.\ngit stash pop\n\nStep 6 — Screenshot your git stash list output. Post in community: 'Stash is a drawer for your unfinished work. I'll never lose WIP changes again.'", "reflection": "'Before today, when I had to switch branches mid-task I would [X — commit anyway? panic?]. Today I used git stash and the thing that impressed me most was [Y]. The real scenario where I'll use this immediately is [Z — be specific]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git stash — Atlassian complete guide", "url": "https://www.atlassian.com/git/tutorials/saving-changes/git-stash"}, {"label": "Article", "title": "git stash — official documentation", "url": "https://git-scm.com/docs/git-stash"}], "stretch": "Research: git stash branch [branch-name]. This creates a NEW branch from your stash and applies the stash to it automatically. When would this be more useful than git stash pop? Post a real scenario in the community.", "teaser": "Tomorrow you'll learn how to name your work in a way that makes releases and bug tracking dramatically easier — for you and your entire team."}, {"day": 33, "district": 5, "districtName": "The Branch", "title": "Tags: Mark What Matters", "isSunday": false, "idea": "Every commit in Git has a hash: a40c3f2. That hash is unique, permanent, and completely unmemorable.\n\nWhen your team ships version 2.3.1 of the product, nobody wants to remember which hash that was. They want to say: 'Test against v2.3.1.' That's what tags are for.\n\nA tag is a permanent, human-readable label attached to a specific commit. Unlike a branch (which moves forward as you add commits), a tag never moves. It points to one commit. Forever.\n\nTwo types:\n\nLIGHTWEIGHT TAG — just a name:\ngit tag v2.3.1\n\nANNOTATED TAG — a name + message + author + date:\ngit tag -a v2.3.1 -m \"Release 2.3.1 — hotfix for login timeout\"\n(Always use annotated tags for releases. They carry context.)\n\nPushing tags to GitHub (they don't push automatically):\ngit push origin v2.3.1       ← push one tag\ngit push origin --tags       ← push all tags", "why": "As a QA engineer, tags are how you know exactly what you tested and when.\n\n'We tested build v2.3.0. The bug appeared in v2.3.1.' That sentence only makes sense if the team uses tags.\n\nTags also let you check out an exact historical state:\ngit checkout v2.2.0\nRun your tests against it. Compare with current. Find when a bug was introduced.\n\nTags turn a stream of commits into a map of milestones. QA engineers who understand tags can communicate about versions with precision. Everyone else is guessing.", "task": "Step 1 — In your git-for-testers-practice repo, on main:\ngit log --oneline\nPick any past commit. That's your 'release.'\n\nStep 2 — Create a lightweight tag on HEAD:\ngit tag v0.1.0\ngit tag — you'll see it listed.\n\nStep 3 — Create an annotated tag on a specific past commit:\ngit tag -a v0.0.1 [older commit hash] -m \"Initial test suite setup\"\n\nStep 4 — List all tags with details:\ngit tag -n\n\nStep 5 — Push your tags to GitHub:\ngit push origin --tags\nGo to GitHub → your repo → click 'Tags'. Both tags are there. Screenshot this page.\n\nStep 6 — Checkout an old tag:\ngit checkout v0.0.1\nGit will warn you about 'detached HEAD state.' Look around — this is your repo at that exact moment.\ngit checkout main to return.\n\nStep 7 — Post screenshot in community: 'Tags are permanent bookmarks on the timeline. v0.1.0 is where I am. v0.0.1 is where I started.'", "reflection": "'Before today, when my team talked about testing v2.3.1 I understood it to mean [X — a branch? a build? vague?]. Today I learned that tags are [Y — your own definition]. The way I'll use tags in my QA work is [Z — be specific about your process]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Git tagging — official book", "url": "https://git-scm.com/book/en/v2/Git-Basics-Tagging"}, {"label": "Article", "title": "Semantic versioning — what v2.3.1 actually means", "url": "https://semver.org/"}], "stretch": "Research semantic versioning (SemVer): MAJOR.MINOR.PATCH. MAJOR = breaking changes, MINOR = new features backward compatible, PATCH = bug fixes only. Given this: if a developer ships v2.4.0 after a bug fix sprint, is that the correct version bump? Why or why not? Post your answer and reasoning in the community.", "teaser": "Tomorrow you'll run a full branching workflow from strategy to merge — the closest simulation to a real sprint you've done in this cohort."}, {"day": 34, "district": 5, "districtName": "The Branch", "title": "Run A Full Sprint Workflow", "isSunday": false, "idea": "Everything this district taught you exists to serve one thing: a real team sprint workflow.\n\nToday there's no new concept. Today is the flight simulator.\n\nYou're going to run a complete, realistic sprint cycle:\n— Start from develop\n— Create a feature branch for a QA task\n— Make structured commits\n— Stash mid-task when an urgent issue appears\n— Handle the urgent issue on a hotfix branch\n— Return, pop the stash, finish your work\n— Rebase onto develop\n— Open a PR\n— Merge with squash\n\nEvery skill from District 5. One workflow. No step-by-step. Just the scenario.\n\nThis is how you prove to yourself that it's yours — not just something you followed along with.", "why": "Confidence in Git doesn't come from knowing commands. It comes from having run real workflows and survived them.\n\nAfter today, when a developer describes the team's branching process, you won't be nodding politely and Googling later. You'll recognise every step because you've already done it.\n\nThat recognition is the foundation of confidence. Confidence is what changes how your team sees you.", "task": "SCENARIO: You're a QA engineer on a 2-week sprint. Your task: update the test suite for a new checkout flow. Mid-task, a P1 bug lands and needs immediate attention.\n\nPHASE 1 — Start your QA task:\ngit checkout develop\ngit pull origin develop\ngit checkout -b test/checkout-flow-update\nMake 2 commits updating checkout-related test files.\n\nPHASE 2 — Urgent interruption arrives:\ngit stash push -m \"WIP: checkout flow test updates\"\ngit checkout develop\ngit checkout -b hotfix/login-button-selector\nMake one commit: fix a 'broken' selector in login.test.js\ngit checkout develop\ngit merge hotfix/login-button-selector\ngit push origin develop\ngit branch -d hotfix/login-button-selector\n\nPHASE 3 — Return to your task:\ngit checkout test/checkout-flow-update\ngit stash pop\nMake one more commit finishing the checkout tests.\n\nPHASE 4 — Clean up before PR:\ngit rebase develop\n(Resolve any conflicts if they appear.)\n\nPHASE 5 — Ship it:\ngit push origin test/checkout-flow-update\nOpen a PR on GitHub: test/checkout-flow-update → develop\nWrite a proper PR description\nSquash and merge.\nTag develop as v0.2.0-beta.\n\nWHEN DONE: git log --oneline --graph on develop. Screenshot. Post in community: 'Full sprint workflow. Start to merge. Here's what it looks like.'", "reflection": "'Going into today I felt [X — ready? nervous? unsure about specific parts?]. The phase that required the most thinking was [Y — which phase and why]. The command I reached for most confidently was [Z]. The command I hesitated on was [W — name it honestly]. After completing this, I feel [final thought].'", "further": [{"label": "Article", "title": "If any phase felt shaky, go back to the specific day that taught it and re-read The Idea section only.", "url": "https://git-scm.com/book/en/v2"}], "stretch": "Write a 'QA Git Workflow' document for a hypothetical new team member. One page. Cover: branch naming convention for test work, when to stash vs when to commit, how to handle a mid-sprint hotfix, PR checklist before requesting review. Post it in the community. This document is the beginning of your professional Git portfolio.", "teaser": "Tomorrow is Sunday — and this week's reflection question will ask you to describe your own Git workflow in one paragraph, out loud, as if explaining it to a developer who just joined your team."}, {"day": 35, "district": 5, "districtName": "The Branch", "title": "The Branch Is Yours Now", "isSunday": true, "recapPrompt": "Three questions. Take your time with each.\n\nQUESTION 1 — The workflow test:\nWithout looking at any notes, write down the complete sprint workflow you ran on Day 34. Every phase. Every command. What you can write from memory is yours. What you can't is what needs one more repetition.\n\nQUESTION 2 — The vocabulary test:\nA developer messages you: 'Hey, can you rebase your test branch on develop, cherry-pick the selector fix from hotfix/login-v2, and open a PR? I'll review it before EOD.'\nWrite your response showing you understood every word. Then write the actual terminal commands you'd run.\n\nQUESTION 3 — The identity question:\nFour weeks ago you were a QA engineer who used files. Today you are a QA engineer who manages code. What specifically changed in how you think about your test scripts?", "communityPrompt": "Post the 'QA Git Workflow' document from Day 34's Stretch — or start one today if you skipped it. Make it real. Make it yours. Someone in this community will use it as a reference. That's the standard to write it to.", "closingQuestion": "Before District 5, Git felt like a tool you used. Does it feel different now? What word would you use to describe your relationship with Git today?"}, {"day": 36, "district": 6, "districtName": "The QA Toolkit", "title": "Blame Is Not An Accusation. It's An Answer.", "isSunday": false, "idea": "A test that was passing last Monday is failing today. The test hasn't changed. Something in the codebase did. You need to find out: who changed line 47 of checkout.js, and when, and why?\n\ngit blame answers all three questions. Instantly.\n\ngit blame [filename]\n\nIt annotates every single line of a file with:\n— The commit hash where that line was last changed\n— The author who changed it\n— The date it was changed\n— The line content itself\n\nEvery line. Every author. Every timestamp. Right there, in one command.\n\nIt's called 'blame' — but it's not about blame. It's about accountability and traceability. In a QA context it means: 'I can tell you exactly when this line changed and who to talk to about it.'\n\nTwo useful variations:\ngit blame [filename]              ← full output\ngit blame -L 40,55 [filename]    ← only lines 40 to 55\ngit blame --since=\"1 week ago\" [filename] ← recent changes only", "why": "Without git blame, finding who changed something means asking around, checking emails, guessing, waiting.\n\nWith git blame, you open your terminal, run one command, and walk into the developer's desk with: 'Line 52 of checkout.js was changed on Tuesday by Arjun — commit message says refactor payment validation. Our test started failing Wednesday morning. Can we look at that together?'\n\nThat conversation goes differently than: 'Um, something changed in the checkout code, I think?'\n\ngit blame turns you from a reporter of problems into a navigator of solutions.", "task": "Step 1 — In your practice repo, make sure login.test.js has at least 10 lines. Make 3 commits — each changing different lines.\n\nStep 2 — Run: git blame login.test.js\nRead every column: [short hash] [author] [date] [line number] [content]\nScreenshot this output.\n\nStep 3 — Run: git blame -L 1,5 login.test.js\nOnly the first 5 lines. Find the hash of a specific line.\n\nStep 4 — Take that hash and run: git show [hash]\nRead the full commit — what else changed in that commit? This is bug archaeology.\n\nStep 5 — Try on README.md:\ngit blame README.md\nFind the oldest unchanged line. Find the most recently changed line.\n\nStep 6 — Post your screenshot in community: 'This is how I find who changed what and when. No asking around. One command.'", "reflection": "'Before today, when a test started failing unexpectedly I would [X — ask developers? guess? check manually?]. Today I used git blame and discovered I could find [Y — what specific information?]. A real bug investigation I've done recently that git blame would have shortened is [Z — describe it]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git blame — Atlassian guide", "url": "https://www.atlassian.com/git/tutorials/inspecting-a-repository/git-blame"}, {"label": "Article", "title": "git blame — official documentation", "url": "https://git-scm.com/docs/git-blame"}], "stretch": "Research: git log -S \"search term\" [filename]. This is called the 'pickaxe' option. It searches the entire commit history for when a specific string was added or removed. Example: git log -S \"loginButton\" --oneline. When would this be more useful than git blame? Post a real QA scenario where you'd use each one.", "teaser": "Tomorrow you'll learn the Git command that finds exactly which commit broke your test — by doing a binary search through your entire history automatically."}, {"day": 37, "district": 6, "districtName": "The QA Toolkit", "title": "Bisect: Let Git Find The Bug For You", "isSunday": false, "idea": "You have 200 commits between 'tests passing' and 'tests failing.' Checking each one manually would take hours. git bisect does it in 8 steps.\n\ngit bisect uses binary search. You tell Git: here is a good commit, here is a bad commit. Git checks out the commit exactly in the middle. You run your test. You tell Git: good or bad? Git moves to the next midpoint. Repeat until Git finds the exact commit that broke things.\n\n200 commits → 8 checks. Every time.\n\nThe commands:\ngit bisect start                    ← begin the hunt\ngit bisect bad                      ← current commit is broken\ngit bisect good [known good hash]   ← this commit was working\n[Git checks out a middle commit]\n[You run your test]\ngit bisect good                     ← if this commit works\ngit bisect bad                      ← if this commit is broken\n[Repeat until Git finds the culprit]\ngit bisect reset                    ← return to HEAD when done\n\nGit tells you: 'abc123 is the first bad commit.' That's your answer.", "why": "Every QA engineer has faced this: 'The test was passing in last month's release. It's failing now. We have 300 commits in between. Nobody knows when it broke.'\n\nWithout bisect: you're guessing, reading every commit, asking developers, spending half a day on archaeology.\n\nWith bisect: you spend 15 minutes and walk out with the exact commit, author, message, and diff.\n\ngit bisect is the closest Git gets to a superpower. Most developers know it exists. Almost no QA engineers use it. The ones who do are unforgettable.", "task": "You'll plant a deliberate 'bug' and use bisect to find it.\n\nStep 1 — Create 8 commits in sequence:\nFor commits 1–4: add normal lines '// Test step [N] — all good'\nOn commit 5 (the 'bug'): add '// BUG INTRODUCED HERE — selector changed' and change something meaningful\nFor commits 6–8: add normal lines again '// Test step [N] — but bug is already in'\n\nStep 2 — Start bisect:\ngit bisect start\ngit bisect bad                       ← HEAD is broken\ngit bisect good HEAD~7               ← 7 commits ago was good\n\nStep 3 — Git checks out a middle commit. Open your file. Is the bug line there?\nIf NO: git bisect good\nIf YES: git bisect bad\nRepeat.\n\nStep 4 — Git will output: '[hash] is the first bad commit'\nRun: git show [that hash]\nConfirm: that's commit 5. Your planted bug.\n\nStep 5 — git bisect reset\nYou're back to HEAD.\n\nStep 6 — Screenshot the bisect output showing the culprit commit. Post in community: '8 commits. Binary search. Git found the bug in 3 steps. This is git bisect.'", "reflection": "'Before today, when a test failed across a large number of commits I would [X]. Today I used git bisect and found the breaking commit in [Y — how many steps?]. The moment that impressed me most was [Z — describe it specifically]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "git bisect — official documentation", "url": "https://git-scm.com/docs/git-bisect"}, {"label": "Article", "title": "Finding bugs with git bisect — practical guide", "url": "https://www.metaltoad.com/blog/beginners-guide-git-bisect-process-elimination"}], "stretch": "Research: git bisect run [script]. You can automate bisect completely by providing a test script. Git runs the script at each step, determines good/bad automatically, and finds the culprit without any manual input. For a Playwright test suite, what command would you pass to bisect run? Write the full bisect automation sequence. Post it in the community.", "teaser": "Tomorrow you'll set up a system that checks your work automatically before you're even allowed to commit — and learn how QA engineers use it to enforce quality at the very first moment, not the last."}, {"day": 38, "district": 6, "districtName": "The QA Toolkit", "title": "Hooks: Automate Quality Before It Leaves Your Machine", "isSunday": false, "idea": "What if Git could run a quality check automatically every time you tried to commit — and refuse the commit if the check fails?\n\nThat's exactly what Git hooks do.\n\nA Git hook is a script that runs automatically at a specific moment in the Git workflow: before a commit, after a commit, before a push, after a merge.\n\nThe most useful hook for QA engineers:\n\npre-commit hook\nRuns automatically every time you type git commit. If the script exits with an error, the commit is blocked. If it exits cleanly, the commit goes through.\n\nWhat can you put in a pre-commit hook?\n— Run your linter (catch syntax errors before commit)\n— Run a fast subset of your test suite\n— Check that commit message follows a convention\n— Verify no debug code (console.log, debugger) was left in\n\nHooks live in: .git/hooks/\nEvery repo has sample hooks already there — disabled by default. You enable them by removing the .sample extension and writing your script.", "why": "The earlier a defect is caught, the cheaper it is to fix.\n\nCaught in production: expensive.\nCaught in code review: medium cost.\nCaught before commit: free.\n\nA pre-commit hook that runs your fast tests means broken code never even enters your repo history. It doesn't wait for CI. It doesn't wait for review. It stops the commit on your machine, right now.\n\nThis is shift-left testing at its most literal: quality check at the earliest possible moment — before the code leaves your laptop.", "task": "Step 1 — Navigate to your practice repo. Go into the hooks directory:\nls .git/hooks/\nYou'll see files ending in .sample — disabled hooks.\n\nStep 2 — Create a pre-commit hook:\nOpen (or create): .git/hooks/pre-commit\n(No file extension — exactly this name.)\n\nStep 3 — Add this script:\n#!/bin/sh\necho \"Running pre-commit checks...\"\n\n# Check for console.log statements in test files\nif grep -r \"console.log\" --include=\"*.js\" .; then\n  echo \"ERROR: Remove console.log statements before committing.\"\n  exit 1\nfi\n\necho \"Pre-commit checks passed.\"\nexit 0\n\nStep 4 — Make it executable:\nchmod +x .git/hooks/pre-commit\n\nStep 5 — Test it:\nAdd console.log(\"debug\") to any .js file.\nTry to commit: git add . && git commit -m \"Test hook\"\nGit should BLOCK the commit with your error message. Screenshot.\n\nStep 6 — Remove the console.log. Try committing again. It goes through. Screenshot both outcomes. Post in community: 'My repo now refuses commits with debug code. This is shift-left quality enforcement.'", "reflection": "'Before today, quality checks in my workflow happened at [X — review? CI? after deployment?]. Today I set up a pre-commit hook and realised that [Y — what shifted in how you think about early quality?]. The check I'd add to a real team's pre-commit hook is [Z — be specific to your QA context]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Git hooks — the complete guide — Atlassian", "url": "https://www.atlassian.com/git/tutorials/git-hooks"}, {"label": "Article", "title": "Git hooks — official documentation", "url": "https://git-scm.com/docs/githooks"}], "stretch": "Research: Husky — a Node.js tool that makes Git hooks shareable across a team. The problem with .git/hooks: it's local only. Husky puts hooks in package.json so the whole team gets them. Install Husky in your practice repo and recreate your pre-commit hook using it. Post the setup steps in the community.", "teaser": "Tomorrow you'll learn how to version your test data the same way you version your code — and why not doing this is one of the most common hidden causes of flaky tests."}, {"day": 39, "district": 6, "districtName": "The QA Toolkit", "title": "Version Your Test Data. Version Everything.", "isSunday": false, "idea": "Your test suite passes on Monday. It fails on Wednesday. The test code hasn't changed. The application code hasn't changed.\n\nWhat changed? The test data.\n\nSomeone updated the credentials file. Someone changed the expected product names. Someone edited the base URL config. And nobody tracked it — because test data wasn't in Git.\n\nEverything your test suite depends on to run correctly belongs in version control:\n\nTest data files       ← usernames, passwords, product names\nConfig files          ← base URLs, environment settings\nFixtures              ← mock API responses, seed data\n.env.example          ← environment variable templates (never .env itself)\n\nThe rule: If your test can't reproduce a result without a file — that file belongs in Git.\n\nWhat does NOT go in Git:\n.env files            ← real secrets, passwords, API keys\nnode_modules          ← generated, too large, in .gitignore\nTest results/reports  ← generated output, not source", "why": "Flaky tests are the most expensive problem in QA. Tests that pass sometimes and fail sometimes erode trust in your entire test suite.\n\nA large percentage of flaky tests trace back to unversioned, inconsistently managed test data.\n\nWhen test data is in Git:\n— Everyone on the team uses the same data.\n— Changes to data are tracked, reviewed, and reversible.\n— 'The test was passing with this data on this date' becomes a statement you can prove.\n\nVersioned test data turns flaky tests from mysterious to diagnosable. Diagnosable problems get fixed. Mysterious ones get disabled.", "task": "Step 1 — In your practice repo, create a test data folder:\nmkdir test-data\ncd test-data\n\nStep 2 — Create three files:\n\nusers.json:\n{\n  \"standard_user\": { \"username\": \"standard_user\", \"password\": \"secret_sauce\" },\n  \"locked_user\": { \"username\": \"locked_out_user\", \"password\": \"secret_sauce\" }\n}\n\nconfig.json:\n{\n  \"baseUrl\": \"https://www.saucedemo.com\",\n  \"timeout\": 30000,\n  \"browser\": \"chromium\"\n}\n\nproducts.json:\n{\n  \"expected_products\": [\"Sauce Labs Backpack\", \"Sauce Labs Bike Light\", \"Sauce Labs Bolt T-Shirt\"]\n}\n\nStep 3 — Create a .gitignore in the root:\n.env\nnode_modules/\ntest-results/\nplaywright-report/\n\nStep 4 — Stage and commit:\ngit add test-data/ .gitignore\ngit commit -m \"Add versioned test data and gitignore\"\n\nStep 5 — Create a .env.example file:\nBASE_URL=https://www.saucedemo.com\nTEST_USERNAME=standard_user\nTEST_PASSWORD=secret_sauce\n\nCommit it: git commit -am \"Add .env.example template\"\n\nStep 6 — Go to GitHub. Confirm the test-data folder is there. Post your screenshot: 'My test data is now versioned. If a test breaks because the data changed — git log will tell me exactly when and why.'", "reflection": "'Before today, my test data lived [X — in my head? in a spreadsheet? hardcoded in the test?]. Today I versioned it and realised that [Y — what specifically changed about how you think about test data?]. The file type I never thought to put in Git before today was [Z]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "What belongs in .gitignore for a JavaScript project", "url": "https://www.toptal.com/developers/gitignore"}, {"label": "Tool", "title": "gitignore.io — generate .gitignore files by project type", "url": "https://www.toptal.com/developers/gitignore"}], "stretch": "Research: git-secret or git-crypt. These tools allow you to store encrypted secrets in Git so sensitive test credentials can be version-controlled safely. How does this differ from just using .env.example? When would a QA team need this? Post a 3-sentence explanation in the community.", "teaser": "Tomorrow you'll learn to read the story of an entire file's life — every change, every author, every decision — in one command."}, {"day": 40, "district": 6, "districtName": "The QA Toolkit", "title": "Every File Has A Story. Learn To Read It.", "isSunday": false, "idea": "A test file in your repo is not just code. It's a record of every decision your team ever made about quality for that feature.\n\nEvery line was written by someone, for a reason, at a moment. Every deletion was a conscious choice. Every rename tells you something changed in the product.\n\nGit gives you three tools to read that story:\n\ngit log --follow [filename]\nTracks a file's full history — even across renames. Without --follow, Git loses track when a file is renamed.\n\ngit log -p [filename]\nShows every commit that touched this file AND the exact diff of what changed in each one. Full history. Full context.\n\ngit show [hash]:[filename]\nShows the exact content of a file at a specific commit. Not what it is now — what it was then.\n\nCombined, these three commands answer:\n'Why does this test exist?' → git log --follow\n'When did this assertion change?' → git log -p\n'What did this file look like before that change?' → git show", "why": "Test files accumulate decisions over months and years. Tests get added when bugs are found. Tests get removed when features change. Assertions get updated when requirements shift.\n\nWithout history, all of that context is lost. A new QA engineer joins and asks: 'Why does this test check for this specific error message?' Without history: nobody knows.\n\nWith history: git log -p login.test.js → 'Added by Priya on March 4th — after the login timeout bug in production. Commit message: Add test for empty session token edge case.'\n\nNow you know. Now you can make decisions. That's what a living test suite looks like.", "task": "Step 1 — Simulate a file's life:\nCreate auth.test.js with 5 lines. Commit.\nEdit it — change 2 lines. Commit.\nRename it to authentication.test.js:\ngit mv auth.test.js authentication.test.js\ngit commit -m \"Rename auth test to match new naming convention\"\nEdit the renamed file — add 3 lines. Commit.\n\nStep 2 — Read the full history:\ngit log --follow --oneline authentication.test.js\nNotice: history goes back through the rename.\nWithout --follow:\ngit log --oneline authentication.test.js\nHistory stops at the rename. Screenshot both. The difference is significant.\n\nStep 3 — Read the full story with diffs:\ngit log -p --follow authentication.test.js\n\nStep 4 — Read the file as it was in a specific past commit:\ngit log --oneline authentication.test.js (pick the first commit hash)\ngit show [hash]:auth.test.js\n\nStep 5 — Post your --follow comparison screenshot: 'With --follow: full history across rename. Without --follow: history cut off at rename. Always use --follow.'", "reflection": "'Before today, I thought a test file was just [X — code? a script? static?]. Today I read the history of a file and noticed [Y — what did the story reveal?]. The git log option I will use most in my real QA work is [Z — which one and why]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "Viewing file history in Git — Atlassian", "url": "https://www.atlassian.com/git/tutorials/inspecting-a-repository"}, {"label": "Article", "title": "git log for a single file — all options", "url": "https://git-scm.com/docs/git-log"}], "stretch": "Go to a real open source test repository on GitHub. Find a test file that has more than 10 commits of history. Find one commit where a test was DELETED. Read the commit message. Why was it deleted? Post your finding in the community: 'Test deleted. Here's why. Here's what this tells us.'", "teaser": "Tomorrow you'll build the one document that proves you're not just a QA engineer who learned Git — you're a QA engineer who thinks about quality at the system level."}, {"day": 41, "district": 6, "districtName": "The QA Toolkit", "title": "Build Your QA Git Playbook", "isSunday": false, "idea": "Everything you've learned across six districts has been building toward one thing: a QA engineer who doesn't just use Git — but who uses Git deliberately, systematically, and in a way that makes the whole team better.\n\nThe final mark of that engineer is documentation.\n\nA playbook is a living document that answers: 'How does our QA team use Git?'\n\nIt covers:\n— Branch naming conventions for QA work\n— Commit message standards for test changes\n— PR checklist before requesting review\n— How to handle hotfixes mid-sprint\n— What goes in Git (test data, configs, fixtures)\n— What never goes in Git (secrets, reports, node_modules)\n— How to investigate a failing test using Git tools\n— Pre-commit hook setup for new team members\n\nA good playbook means: a new QA engineer joins on Monday. By Tuesday, they're working exactly the way the team works. No handholding. No guessing. No 'just ask someone.'", "why": "Individual skill is yours alone. Documented process is the team's forever.\n\nThe QA engineer who writes the playbook becomes the person who defined how quality works at this company. That's not a small thing. That's the kind of contribution that gets noticed, referenced, and remembered.\n\nYou've built all the ingredients across 40 days. Today you assemble them into something lasting.", "task": "Build your QA Git Playbook. Use Notion, Google Docs, or Markdown in your repo.\n\nStructure it as follows:\n\n# QA Git Playbook\n\n## 1. Branch Naming Convention\ntest/[feature-name] ← new test coverage\nfix/[test-name] ← fixing a broken test\ndata/[dataset-name] ← test data updates\n\n## 2. Commit Message Standard\nFormat: [type]: [what changed] — [why if non-obvious]\nTypes for QA: test, fix, data, chore, docs\n\n## 3. What Lives In Git\n✅ Test files, test data, .env.example, .gitignore, docs\n❌ .env, node_modules/, playwright-report/, secrets\n\n## 4. PR Checklist (Before Requesting Review)\n[ ] Branch rebased on latest develop\n[ ] Tests run locally and pass\n[ ] No console.log or debugger statements\n[ ] Commit messages follow our standard\n[ ] PR description explains what changed and why\n\n## 5. Hotfix Response Protocol\n1. git stash push -m \"WIP: [what you were doing]\"\n2. git checkout develop && git pull\n3. git checkout -b hotfix/[issue-name]\n4. Fix. Commit. Push. Open PR.\n5. After merge: git checkout your-branch && git stash pop\n6. git rebase develop\n\n## 6. Investigating A Failing Test\nStep 1: git log --oneline --since=\"3 days ago\"\nStep 2: git blame [failing-test-file] -L [failing line]\nStep 3: git show [suspicious commit hash]\nStep 4: If needed: git bisect start → find exact breaking commit\nStep 5: Bring findings to developer with commit hash, author, diff\n\n## 7. Pre-Commit Hook Setup\n[Paste your hook script from Day 38]\nSetup: copy to .git/hooks/pre-commit && chmod +x\n\nCommit your playbook:\ngit add QA-GIT-PLAYBOOK.md\ngit commit -m \"docs: Add QA Git Playbook — Days 1-41\"\ngit push origin main\n\nPost the link in the community. This is your most important post of the cohort.", "reflection": "'Before today, my Git knowledge existed [X — in my head? in scattered notes?]. Today I assembled it into a playbook and the section that surprised me most was [Y — which one took the most thought to write?]. If a new QA engineer joined my team tomorrow and I handed them this document, they would [Z — what could they do with it?]. Tomorrow I will [W].'", "further": [{"label": "Article", "title": "How to write engineering documentation people actually read", "url": "https://www.divio.com/blog/documentation/"}, {"label": "Article", "title": "Google's engineering practices documentation", "url": "https://google.github.io/eng-practices/"}], "stretch": "Add an eighth section to your playbook: '### 8. Git Commands Every QA Engineer Should Know Cold'. List 15 commands with a one-line description of each. Written in your words, from your 41 days of practice. Because you have.", "teaser": "Tomorrow is Sunday — but the reflection question is the most important one of the entire cohort. Don't skip it."}, {"day": 42, "district": 6, "districtName": "The QA Toolkit", "title": "The QA Engineer With The Toolkit", "isSunday": true, "recapPrompt": "Three questions. Give each one the time it deserves.\n\nQUESTION 1 — The toolkit inventory:\nList every QA-specific Git tool you learned this week. For each: what it does in one sentence, and one real scenario where you'd use it at work. Don't use my words. Use yours.\n\nQUESTION 2 — The investigation scenario:\nA developer tells you: 'Our checkout tests started failing sometime in the last two weeks. We have about 60 commits in that window. Nobody knows which change caused it.' Write your complete investigation plan. Which commands. In which order. What you'd look for. What you'd bring back to the developer.\n\nQUESTION 3 — The compounding question:\nGo back and read your Day 1 reflection. Now write: what does version control mean to you today? Not what Git does. What it means. For your work. For your team. For how you operate.", "communityPrompt": "Post your QA Git Playbook from Day 41 in the community if you haven't already. Then find one other playbook posted by a fellow learner. Leave a specific comment on ONE section: 'Your [section name] is stronger than mine because [specific reason]. I'm going to update mine to include [what you learned from theirs].'", "closingQuestion": "Six weeks ago, a developer said 'push your test branch and open a PR.' You nodded and Googled it privately. If that same developer said it today — what would you do differently? And what would they notice that's different about you?"}, {"day": 43, "district": 7, "districtName": "The Identity", "title": "The Capstone Brief", "isSunday": false, "idea": "Everything this cohort taught you was in service of one thing: being genuinely useful in a real team, working on real code, with real Git workflows.\n\nNot 'I completed a course.' Not 'I know what git rebase means.' But: 'Here is a real QA repository I built and managed from scratch — using every practice this cohort taught.'\n\nThat's what a capstone is. Not a test. Not a quiz. Not a certificate. A thing that exists in the world that didn't exist before.\n\nYour capstone is this:\n\nBUILD A COMPLETE, PROFESSIONAL QA REPOSITORY for the Sauce Demo application — structured, versioned, documented, and managed exactly as you would in a real job.\n\nThis is not a practice exercise. This is portfolio work. The kind a hiring manager opens and says: 'This person knows what they're doing.'\n\nTomorrow you build it. Today you plan it. Planning is not optional. It's the difference between a professional deliverable and a rushed folder of files.", "why": "Every QA engineer you're competing with has a CV that says 'familiar with Git.'\n\nYou will have a GitHub repository that shows it.\n\nThere is no comparison between those two things. A CV claim is a promise. A repo is proof.\n\nWhen you share your GitHub profile in a job application, an interview, or a LinkedIn post — this repository is the evidence behind every claim you make. Build it like someone will read it. Because they will.", "task": "Plan your capstone repository. Write this down before you write a single line of code tomorrow.\n\nREPOSITORY NAME: sauce-demo-qa-suite\n\nSTRUCTURE TO PLAN:\nsauce-demo-qa-suite/\n├── README.md\n├── .gitignore\n├── .env.example\n├── QA-GIT-PLAYBOOK.md\n├── test-data/\n│   ├── users.json\n│   ├── products.json\n│   └── config.json\n├── tests/\n│   ├── login.test.js\n│   ├── checkout.test.js\n│   └── cart.test.js\n├── fixtures/\n│   └── test-helpers.js\n└── docs/\n    ├── CONTRIBUTING.md\n    └── TEST-COVERAGE.md\n\nBRANCHING PLAN: Write out which branches you'll create.\nmain → stable, production-ready test suite\ndevelop → integration branch\nfeature/* → individual test additions\n\nCOMMIT PLAN: What will each commit contain? Write at least 8 planned commits with messages.\n\nTAG PLAN: What version will you tag when the capstone is complete? v1.0.0 — with a proper annotated tag message.\n\nPR PLAN: You'll merge at least one feature branch via a PR. Write the PR title and description now.\n\nPost your plan in the community TODAY — before you build anything. Public commitment is accountability. It's what professionals do.", "reflection": "'Before today, the idea of building a professional QA repository felt [X]. Today I mapped out every file, every commit, every branch — and the part of the plan I'm most confident about is [Y]. The part I'm most uncertain about is [Z — name it honestly]. Tomorrow I will [build it — and that sentence should feel different than it would have on Day 1].'", "further": [{"label": "Article", "title": "Playwright best practices", "url": "https://playwright.dev/docs/best-practices"}, {"label": "Article", "title": "Writing a README that people actually read", "url": "https://www.makeareadme.com/"}], "stretch": "Look at three real QA repositories on GitHub. For each one, note: one thing they do better than your plan, one thing your plan does better than theirs, one thing you'll borrow for your capstone. Post your three observations in the community. Good engineers steal deliberately. Great ones give credit.", "teaser": "Tomorrow you build. No hints. No step-by-step. Just your plan, your terminal, and 45 days of skill."}, {"day": 44, "district": 7, "districtName": "The Identity", "title": "Build It. Ship It. Own It.", "isSunday": false, "idea": "Today is not a lesson. Today is the proof.\n\n44 days ago you looked at a GitHub repository and didn't know what the green 'Code' button did.\n\nToday you're going to build one. From scratch. Alone. Using everything.\n\nThere will be moments today where you're not sure which command to use. Look at your notes. That's allowed. Real engineers use references. That's not weakness.\n\nThere will be moments where something breaks. Git it out. Literally. git status. git log. git diff. The answers are always in those three commands.\n\nThere will be a moment — probably midway through — where it starts to flow. Where the commands come before the thinking. Where you reach for git stash before you've consciously decided to.\n\nThat moment is the whole cohort in one second. Notice it when it happens.", "why": "This repository is the answer to every future 'do you know Git?' question you will ever be asked.\n\nNot 'yes.' But: 'Here's my GitHub. Here's a repository I built and managed entirely using Git best practices. Branch strategy, commit conventions, versioned test data, PR workflow, hooks, tags, documentation.'\n\nThat answer closes interviews. That answer earns respect in teams. That answer is what 45 days of deliberate practice looks like.", "task": "Execute your plan from Day 43. No step-by-step today. You wrote the steps yesterday. Follow them.\n\nMINIMUM REQUIREMENTS:\n\nREPOSITORY SETUP:\n✅ Created on GitHub with a proper description\n✅ Cloned locally\n✅ .gitignore in place from the first commit\n✅ Branch protection on main (PRs required)\n\nBRANCH STRUCTURE:\n✅ main branch — stable\n✅ develop branch — created and pushed\n✅ At least one feature branch — created, worked on, PR'd, merged\n\nCOMMITS:\n✅ Minimum 8 commits with professional messages\n✅ Each commit is atomic (one change, one reason)\n✅ Commit messages follow your Day 41 convention\n\nFILES:\n✅ README.md with setup instructions and what the suite covers\n✅ .gitignore appropriate for JavaScript/Playwright\n✅ .env.example with all required variables\n✅ test-data/ with at least users.json and config.json\n✅ tests/ with at least 2 test files\n✅ QA-GIT-PLAYBOOK.md from Day 41\n✅ docs/CONTRIBUTING.md\n\nWORKFLOW:\n✅ At least one PR opened, reviewed, and merged via squash\n✅ PR has a proper title and description\n\nGIT TOOLKIT:\n✅ pre-commit hook installed and working\n✅ Repository tagged as v1.0.0 with annotated tag message\n✅ Tag pushed to GitHub\n\nFINAL STEP:\nRun git log --oneline --graph on main. Screenshot it.\nGo to GitHub. Screenshot the main page.\n\nPost both screenshots in the community with:\n'sauce-demo-qa-suite — v1.0.0\nBuilt across 45 days. Here's what's inside.\n[GitHub link]'", "reflection": "'Going into today I felt [X — nervous? ready? uncertain about something specific?]. The part of the build that surprised me by being easier than I expected was [Y]. The part that was harder than I expected was [Z — and here's how I worked through it]. The moment that felt most like a professional QA engineer working in a real repo was [describe it specifically]. Tomorrow I will [this is your last Tomorrow prompt — make it count].'", "further": [{"label": "Article", "title": "If you get stuck on anything, go back to the district that taught it and re-read The Idea section.", "url": "https://git-scm.com/book/en/v2"}], "stretch": "Write a LinkedIn post announcing your capstone. Draft it here — don't post it yet (that's Day 45). Frame it around the transformation, not the completion: Not 'I finished a Git course.' But '45 days ago I couldn't clone a repository. Today I shipped a professional QA test suite with branch protection, commit conventions, versioned test data, automated pre-commit hooks, and full Git workflow documentation. Here's what I built and what I learned. [link]'", "teaser": "Tomorrow is the last day of this cohort. No new content. No new commands. No new tasks. Just you, your Day 1 reflection, and the distance between them."}, {"day": 45, "district": 7, "districtName": "The Identity", "title": "Day 1 → Day 45. What Changed.", "isSunday": true, "recapPrompt": "Go back and find your Day 1 reflection. Read it slowly. Then come back here.\n\nAnswer all five:\n\n1. THE BEFORE\n'On Day 1, I thought Git was _____. The feeling I had when I looked at that first repository was _____.\n\n2. THE TURNING POINT\n'The day or concept that shifted something for me was _____. Before that day I felt _____. After it I felt _____.\n\n3. THE PROOF\n'The thing I built that proves I'm not the same QA engineer I was 45 days ago is _____. Here is the link: [your GitHub repo].'\n\n4. THE GAP\n'I still want to get better at _____. My plan for that is _____. I'm not embarrassed by this gap — I'm naming it because named gaps get closed.'\n\n5. THE IDENTITY\n'45 days ago, if a developer said rebase your test branch on develop, cherry-pick the selector fix, open a PR with a squash merge — I would have _____. Today I would _____. That difference has a name. The name is: _____.'", "communityPrompt": "Post two things in the community today:\n\n1. YOUR FINAL REFLECTION (or a meaningful excerpt from it). Not a summary. The actual words. This community watched you start. Let them see where you ended.\n\n2. YOUR LINKEDIN POST (from Day 44's Stretch — now it's time). Post it. Today. Not 'I'll do it later.' Later is where intentions go to die. Today is where real things happen.\n\nIf you're nervous about posting — that nervousness is the last thing to push through. Everything in this cohort has been about pushing through the version of you that holds back. This is the final rep.", "closingQuestion": "45 days ago, if a developer said 'push your test branch and open a PR' — what did that mean to you? What does it mean to you now? Write both answers. The second one is the most important thing you've written in this entire cohort."}]};
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+const STORAGE_KEY = "gitForTesters_progress";
+const TOTAL_DAYS = 45;
+const SUNDAYS = [7, 14, 21, 28, 35, 42, 45];
+
+/* View state for the TODAY tab */
+let viewingDay = 1;   // which day is rendered in the TODAY panel
+let readOnly   = false;
+
+/* Quick lookup of day objects by day number */
+const DAYS_BY_NUM = {};
+COHORT_DATA.days.forEach(d => { DAYS_BY_NUM[d.day] = d; });
+
+/* ============================================================
+   DATE HELPERS
+   ============================================================ */
+function todayStr() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
+}
+function dateStrOffset(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/* ============================================================
+   LOCALSTORAGE — getProgress() / saveProgress()
+   ============================================================ */
+function getProgress() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    // First load — initialise fresh state
+    const fresh = {
+      completedDays: [],
+      reflections: {},
+      currentDay: 1,
+      streakCount: 0,
+      lastCompletedDate: null,
+      startDate: todayStr()
+    };
+    saveProgress(fresh);
+    return fresh;
+  }
+  try {
+    const p = JSON.parse(raw);
+    // Defensive defaults
+    p.completedDays = p.completedDays || [];
+    p.reflections   = p.reflections || {};
+    p.currentDay    = p.currentDay || 1;
+    p.streakCount   = p.streakCount || 0;
+    return p;
+  } catch (e) {
+    localStorage.removeItem(STORAGE_KEY);
+    return getProgress();
+  }
+}
+
+function saveProgress(p) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+}
+
+/* ============================================================
+   DAY STATE HELPERS — locking logic
+   ============================================================ */
+function isDayCompleted(n) {
+  return getProgress().completedDays.includes(n);
+}
+
+/* Day 1 always unlocked; Day N unlocks when Day N-1 is completed.
+   (Sunday completion adds the Sunday to completedDays, which unlocks
+   the following Monday under the same rule.) */
+function isDayUnlocked(n) {
+  if (n === 1) return true;
+  return getProgress().completedDays.includes(n - 1);
+}
+
+/* The current day = lowest unlocked, not-yet-completed day */
+function computeCurrentDay() {
+  const p = getProgress();
+  for (let n = 1; n <= TOTAL_DAYS; n++) {
+    if (!p.completedDays.includes(n) && isDayUnlocked(n)) return n;
+  }
+  return TOTAL_DAYS;
+}
+
+/* ============================================================
+   TEXT FORMATTING — escape, backtick-code, newlines
+   ============================================================ */
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+/* Escape -> wrap `code` -> convert \n to <br> */
+function fmt(text) {
+  let t = escapeHtml(text);
+  t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+  t = t.replace(/\n/g, "<br>");
+  return t;
+}
+
+/* ============================================================
+   WORD COUNT
+   ============================================================ */
+function countWords(str) {
+  const trimmed = (str || "").trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+/* ============================================================
+   renderDay(dayNumber) — build the TODAY panel for a day
+   ============================================================ */
+function renderDay(dayNumber) {
+  viewingDay = dayNumber;
+  const day = DAYS_BY_NUM[dayNumber];
+  const p = getProgress();
+  const completed = p.completedDays.includes(dayNumber);
+  const panel = document.getElementById("panel-today");
+
+  // Browser tab title
+  document.title = "Git for Testers · Day " + dayNumber;
+
+  let html = "";
+
+  // Read-only "back to today" control
+  if (readOnly) {
+    html += `<button class="back-btn" onclick="backToToday()">← Back to Today</button>`;
+  }
+
+  /* ---- HEADER AREA ---- */
+  html += `
+    <div class="district-label">DISTRICT ${day.district} · ${escapeHtml(day.districtName)}</div>
+    <div class="day-number">DAY ${day.day}</div>
+    <div class="day-title">${escapeHtml(day.title)}</div>`;
+
+  if (readOnly && completed) {
+    html += `<div class="completed-badge">✓ Completed</div>`;
+  }
+  html += `<hr class="hr" />`;
+
+  if (day.isSunday) {
+    /* ===================== SUNDAY LAYOUT ===================== */
+    html += `
+      <div class="card">
+        <div class="card-label">📋 Weekly Recap</div>
+        <div class="prompt-label">Weekly Recap Prompt</div>
+        <div class="card-body">${fmt(day.recapPrompt)}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">👥 Community</div>
+        <div class="prompt-label">Community Prompt</div>
+        <div class="card-body">${fmt(day.communityPrompt)}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">💭 The Question</div>
+        <div class="prompt-label">This Week's Question</div>
+        <div class="big-question">${fmt(day.closingQuestion)}</div>
+      </div>`;
+
+    if (!readOnly) {
+      html += `<div class="sunday-actions" id="sundayAction">`;
+      if (completed) {
+        html += `<button class="btn btn-success" disabled>✓ Sunday Complete</button>`;
+      } else {
+        html += `<button class="btn btn-primary" onclick="markSundayComplete(${day.day})">Mark Sunday Complete</button>`;
+      }
+      html += `</div>
+        <div class="rest-note">You are allowed to do nothing today. That is also learning.</div>`;
+    }
+
+  } else {
+    /* ===================== REGULAR DAY LAYOUT ===================== */
+    const isLastReflectionDay = (dayNumber === 44);
+    const savedReflection = p.reflections[dayNumber] || "";
+
+    // CARD 1 — THE IDEA
+    html += `
+      <div class="card">
+        <div class="card-label">💡 The Idea</div>
+        <div class="card-body">${fmt(day.idea)}</div>
+      </div>`;
+
+    // CARD 2 — WHY IT MATTERS
+    html += `
+      <div class="card">
+        <div class="card-label">⚡ Why It Matters</div>
+        <div class="card-body">${fmt(day.why)}</div>
+      </div>`;
+
+    // CARD 3 — TODAY'S BUILD
+    html += `
+      <div class="card">
+        <div class="card-label">🛠 Today's Build</div>
+        <div class="card-body">${fmt(day.task)}</div>
+      </div>`;
+
+    // CARD 4 — REFLECTION
+    const disabledAttr = readOnly ? "disabled" : "";
+    html += `
+      <div class="card">
+        <div class="card-label">🪞 Reflection</div>
+        <div class="reflect-prompt">${fmt(day.reflection)}</div>
+        <textarea class="reflection" id="reflectionBox" ${disabledAttr}
+          oninput="updateWordCount()"
+          placeholder="Write your reflection here...">${escapeHtml(savedReflection)}</textarea>
+        <div class="word-counter" id="wordCounter">0 / 100 words</div>`;
+
+    if (readOnly) {
+      html += `<div class="completed-badge">✓ Completed</div>`;
+    } else {
+      const btnText = isLastReflectionDay
+        ? "Submit Reflection &amp; Complete Cohort"
+        : "Submit Reflection &amp; Unlock Day " + (dayNumber + 1);
+      const alreadyDone = completed;
+      html += `
+        <div class="submit-row">
+          <button class="btn ${alreadyDone ? "btn-success" : "btn-primary"}" id="submitBtn"
+            ${alreadyDone ? "disabled" : "disabled"}
+            onclick="submitReflection()">
+            ${alreadyDone ? "✓ Reflection Submitted" : btnText}
+          </button>
+        </div>`;
+    }
+    html += `</div>`; // close reflection card
+
+    // CARD 5 — FURTHER READING (collapsible)
+    if (day.further && day.further.length) {
+      html += `
+        <div class="card collapsible" id="readingCard">
+          <div class="card-label" onclick="toggleCollapse('readingCard')">
+            <span>📚 Further Reading</span><span class="arrow">▼</span>
+          </div>
+          <div class="collapse-body"><div class="collapse-inner">`;
+      day.further.forEach(r => {
+        html += `
+          <a class="reading-link" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">
+            <span class="rl-label">${escapeHtml(r.label)}</span>
+            <span class="rl-title">${escapeHtml(r.title)} →</span>
+          </a>`;
+      });
+      html += `</div></div></div>`;
+    }
+
+    // CARD 6 — STRETCH (collapsible)
+    if (day.stretch) {
+      html += `
+        <div class="card collapsible" id="stretchCard">
+          <div class="card-label" onclick="toggleCollapse('stretchCard')">
+            <span>🚀 Stretch</span><span class="arrow">▼</span>
+          </div>
+          <div class="collapse-body"><div class="collapse-inner">
+            <div class="card-body sub">${fmt(day.stretch)}</div>
+          </div></div>
+        </div>`;
+    }
+
+    // CARD 7 — TOMORROW TEASER (hidden until submitted)
+    if (day.teaser) {
+      const showTeaser = completed && !readOnly;
+      html += `
+        <div class="teaser ${showTeaser ? "show" : ""}" id="teaserCard">
+          <span class="teaser-label">Tomorrow →</span>
+          ${escapeHtml(day.teaser)}
+        </div>`;
+    }
+  }
+
+  panel.innerHTML = html;
+
+  // Initialise word count / button state for editable regular days
+  if (!day.isSunday && !readOnly) {
+    updateWordCount();
+  }
+}
+
+/* ============================================================
+   WORD COUNT + SUBMIT BUTTON ENABLE
+   ============================================================ */
+function updateWordCount() {
+  const box = document.getElementById("reflectionBox");
+  const counter = document.getElementById("wordCounter");
+  const btn = document.getElementById("submitBtn");
+  if (!box || !counter) return;
+
+  const words = countWords(box.value);
+  counter.textContent = words + " / 100 words";
+  counter.classList.toggle("reached", words >= 100);
+
+  // Don't re-enable a button that's already in the submitted state
+  if (btn && !isDayCompleted(viewingDay)) {
+    btn.disabled = words < 100;
+  }
+}
+
+/* ============================================================
+   submitReflection() — save + success state
+   ============================================================ */
+function submitReflection() {
+  const box = document.getElementById("reflectionBox");
+  if (!box) return;
+  if (countWords(box.value) < 100) return;
+
+  const p = getProgress();
+  const day = viewingDay;
+
+  // Save reflection text
+  p.reflections[day] = box.value;
+
+  // Mark complete (idempotent)
+  if (!p.completedDays.includes(day)) {
+    p.completedDays.push(day);
+    p.completedDays.sort((a, b) => a - b);
+  }
+
+  // Streak + current day
+  applyStreak(p);
+  p.currentDay = computeCurrentDayFrom(p);
+
+  saveProgress(p);
+
+  // --- SUCCESS STATE ---
+  const btn = document.getElementById("submitBtn");
+  if (btn) {
+    btn.textContent = "✓ Reflection Submitted";
+    btn.classList.remove("btn-primary");
+    btn.classList.add("btn-success");
+    btn.disabled = true;
+  }
+  box.disabled = false; // keep readable
+
+  // Reveal tomorrow teaser
+  const teaser = document.getElementById("teaserCard");
+  if (teaser) teaser.classList.add("show");
+
+  // Refresh progress views
+  renderProgress();
+}
+
+/* ============================================================
+   markSundayComplete(day) — Sunday "mark complete" button
+   ============================================================ */
+function markSundayComplete(day) {
+  const p = getProgress();
+  if (!p.completedDays.includes(day)) {
+    p.completedDays.push(day);
+    p.completedDays.sort((a, b) => a - b);
+  }
+  applyStreak(p);
+  p.currentDay = computeCurrentDayFrom(p);
+  saveProgress(p);
+
+  // Replace button
+  const wrap = document.getElementById("sundayAction");
+  if (wrap) wrap.innerHTML = `<button class="btn btn-success" disabled>✓ Sunday Complete</button>`;
+
+  renderProgress();
+}
+
+/* Compute current day from a given progress object (for save-time) */
+function computeCurrentDayFrom(p) {
+  for (let n = 1; n <= TOTAL_DAYS; n++) {
+    const unlocked = (n === 1) || p.completedDays.includes(n - 1);
+    if (!p.completedDays.includes(n) && unlocked) return n;
+  }
+  return TOTAL_DAYS;
+}
+
+/* ============================================================
+   STREAK LOGIC
+   ============================================================ */
+function applyStreak(p) {
+  const today = todayStr();
+  const yesterday = dateStrOffset(-1);
+
+  if (p.lastCompletedDate === today) {
+    // already completed something today — streak unchanged
+  } else if (p.lastCompletedDate === yesterday) {
+    p.streakCount = (p.streakCount || 0) + 1;
+  } else {
+    // null or before yesterday — reset to 1
+    p.streakCount = 1;
+  }
+  p.lastCompletedDate = today;
+}
+
+/* ============================================================
+   COLLAPSIBLE TOGGLE (shared by Further Reading / Stretch)
+   ============================================================ */
+function toggleCollapse(id) {
+  document.getElementById(id).classList.toggle("open");
+}
+
+/* ============================================================
+   TAB SWITCHING — showTab(tabName)
+   ============================================================ */
+function showTab(tabName) {
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === tabName);
+  });
+  document.querySelectorAll(".panel").forEach(pnl => pnl.classList.remove("active"));
+  const panel = document.getElementById("panel-" + tabName);
+  if (panel) panel.classList.add("active");
+
+  // Refresh dynamic panels on entry
+  if (tabName === "progress") renderProgress();
+  if (tabName === "today" && !readOnly) renderDay(computeCurrentDay());
+}
+
+/* ============================================================
+   PROGRESS TAB — renderProgress()
+   ============================================================ */
+function renderProgress() {
+  const p = getProgress();
+  const panel = document.getElementById("panel-progress");
+  const completedCount = p.completedDays.length;
+  const remaining = TOTAL_DAYS - completedCount;
+  const pct = Math.round((completedCount / TOTAL_DAYS) * 100);
+  const current = computeCurrentDay();
+
+  let html = "";
+
+  /* SECTION 1 — STREAK */
+  html += `<div class="card">`;
+  if (p.streakCount > 0) {
+    html += `<div class="streak-big">🔥 ${p.streakCount} day streak</div>
+             <div class="streak-sub">Consistency compounds.</div>`;
+  } else {
+    html += `<div class="streak-big">🔥 0 day streak</div>
+             <div class="streak-sub" style="color:var(--primary);cursor:pointer;" onclick="showTab('today')">Start your streak today →</div>`;
+  }
+  html += `</div>`;
+
+  /* SECTION 2 — DISTRICT MAP */
+  html += `<div class="section-title">DISTRICT MAP</div>`;
+  COHORT_DATA.districts.forEach(dist => {
+    const range = dist.days.split(/[–-]/).map(s => parseInt(s.trim(), 10));
+    const start = range[0], end = range[1];
+    let total = end - start + 1;
+    let done = 0;
+    for (let n = start; n <= end; n++) if (p.completedDays.includes(n)) done++;
+    const w = Math.round((done / total) * 100);
+    html += `
+      <div class="district-row">
+        <div class="dr-head">
+          <span class="dr-name">D${dist.number} · ${escapeHtml(dist.name)}</span>
+          <span class="dr-range">${escapeHtml(dist.days)}</span>
+        </div>
+        <div class="bar"><div class="bar-fill" style="width:${w}%"></div></div>
+      </div>`;
+  });
+
+  /* SECTION 3 — 45-SQUARE GRID */
+  html += `<div class="section-title">YOUR JOURNEY — 45 DAYS</div>`;
+  html += `<div class="journey">`;
+  // 7 rows of districts -> but grid is 9 cols. Use district-based row labels D1..D7,
+  // distributing 45 days across rows of 9 with leftover handled per the 9-col layout.
+  // We label rows R1..R5 (9 each) but spec wants D1..D7 row labels; use day-based 9-col rows
+  // with sequential row labels matching the journey.
+  const COLS = 9;
+  const rows = Math.ceil(TOTAL_DAYS / COLS); // 5 rows
+  for (let r = 0; r < rows; r++) {
+    html += `<div class="journey-row"><span class="row-label">D${r + 1}</span><div class="row-squares">`;
+    for (let c = 0; c < COLS; c++) {
+      const n = r * COLS + c + 1;
+      if (n > TOTAL_DAYS) { html += `<div class="sq empty"></div>`; continue; }
+      const day = DAYS_BY_NUM[n];
+      const title = (day ? day.title : "").replace(/"/g, "&quot;");
+      if (p.completedDays.includes(n)) {
+        html += `<div class="sq completed" title="Day ${n}: ${escapeHtml(title)}" onclick="openReadOnly(${n})">✓</div>`;
+      } else if (n === current) {
+        html += `<div class="sq current" title="Day ${n}: ${escapeHtml(title)}" onclick="goToCurrent(${n})">${n}</div>`;
+      } else {
+        html += `<div class="sq locked" title="Complete Day ${n - 1} to unlock" onclick="shakeEl(this)">🔒</div>`;
+      }
+    }
+    html += `</div></div>`;
+  }
+  html += `</div>`;
+
+  /* SECTION 4 — STATS ROW */
+  html += `
+    <div class="section-title">STATS</div>
+    <div class="stats-row">
+      <div class="stat"><div class="num">${completedCount}</div><div class="lbl">Days completed</div></div>
+      <div class="stat"><div class="num">${remaining}</div><div class="lbl">Remaining</div></div>
+      <div class="stat"><div class="num">${pct}%</div><div class="lbl">Complete</div></div>
+    </div>`;
+
+  panel.innerHTML = html;
+}
+
+/* ============================================================
+   GRID NAVIGATION
+   ============================================================ */
+function goToCurrent(n) {
+  readOnly = false;
+  renderDay(n);
+  showTab("today");
+}
+function openReadOnly(n) {
+  readOnly = true;
+  renderDay(n);
+  showTab("today");
+}
+function backToToday() {
+  readOnly = false;
+  renderDay(computeCurrentDay());
+  showTab("today");
+}
+
+/* ============================================================
+   RESOURCES TAB — build collapsible district groups
+   ============================================================ */
+function buildResources() {
+  const panel = document.getElementById("panel-resources");
+  let html = `<h1 style="font-size:1.5rem;margin-bottom:6px;">Resources</h1>
+              <p style="color:var(--text-sec);margin-bottom:20px;">Curated links, grouped by district.</p>`;
+
+  COHORT_DATA.districts.forEach((dist, idx) => {
+    // Collect unique further-reading items for days in this district
+    const seen = new Set();
+    const items = [];
+    COHORT_DATA.days
+      .filter(d => d.district === dist.number)
+      .forEach(d => {
+        (d.further || []).forEach(r => {
+          const key = r.url;
+          if (!seen.has(key)) { seen.add(key); items.push(r); }
+        });
+      });
+
+    const openClass = idx === 0 ? "open" : "";
+    html += `
+      <div class="card collapsible ${openClass}" id="resCard${dist.number}">
+        <div class="card-label" onclick="toggleCollapse('resCard${dist.number}')">
+          <span>District ${dist.number} — ${escapeHtml(dist.name)}</span><span class="arrow">▼</span>
+        </div>
+        <div class="collapse-body"><div class="collapse-inner">`;
+    items.forEach(r => {
+      html += `
+        <a class="reading-link" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">
+          <span class="rl-label">${escapeHtml(r.label)}</span>
+          <span class="rl-title">· ${escapeHtml(r.title)}</span>
+        </a>`;
+    });
+    html += `</div></div></div>`;
+  });
+
+  panel.innerHTML = html;
+}
+
+/* ============================================================
+   Q&A TAB — build accordion
+   ============================================================ */
+const QA = [
+  { q: "What if I miss a day?",
+    a: "Pick up where you left off. No shame, no penalty. Every day you do is a day that counts. The streak resets — the learning doesn't." },
+  { q: "Do I need to know programming to do this cohort?",
+    a: "No. The test files in this cohort are placeholders — you don't need to write working code. You need to understand what Git does with files. That's a different skill, and it's what this cohort teaches." },
+  { q: "Which operating system does this work on?",
+    a: "Mac, Windows, and Linux all work. Day 3 covers installation for both Mac and Windows. Git Bash is recommended for Windows users." },
+  { q: "What if my reflection is less than 100 words?",
+    a: "The portal won't let you submit it. This is intentional — not to be difficult, but because reflection under 100 words is almost always surface-level. Push past it. The insight lives deeper." },
+  { q: "Can I skip the Stretch activities?",
+    a: "Yes. Stretch is for learners who want to go deeper. Skipping it never blocks your progress. Doing it always accelerates it." },
+  { q: "Where do I ask questions that aren't in this FAQ?",
+    a: "In the community space. Not in WhatsApp. Not by email. In the community — because your question helps everyone who was afraid to ask it." }
+];
+function buildQA() {
+  const list = document.getElementById("qaList");
+  let html = "";
+  QA.forEach((item, i) => {
+    html += `
+      <div class="qa-item" id="qa${i}">
+        <div class="qa-q" onclick="toggleQA(${i})">
+          <span>${escapeHtml(item.q)}</span><span class="arrow">▼</span>
+        </div>
+        <div class="qa-a"><div class="qa-a-inner">${escapeHtml(item.a)}</div></div>
+      </div>`;
+  });
+  list.innerHTML = html;
+}
+function toggleQA(i) {
+  document.getElementById("qa" + i).classList.toggle("open");
+}
+
+/* ============================================================
+   RESET PROGRESS
+   ============================================================ */
+function resetProgress() {
+  if (confirm("This will clear all your progress. Are you sure?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
+/* ============================================================
+   LOCKED DAY SHAKE (used by nav of grid — locked squares show
+   tooltip; the shake is wired for completeness if a locked square
+   is interacted with)
+   ============================================================ */
+function shakeEl(el) {
+  el.classList.remove("shake");
+  void el.offsetWidth; // reflow
+  el.classList.add("shake");
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  getProgress();              // ensure storage initialised
+  buildResources();
+  buildQA();
+  renderProgress();
+  renderDay(computeCurrentDay());
+  showTab("today");
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
