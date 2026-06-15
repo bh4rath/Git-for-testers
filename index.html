@@ -5,34 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Git for Testers — a 45-day cohort that takes QA engineers from zero to confident with Git. Read, build, reflect, one day at a time." />
 <meta name="color-scheme" content="dark" />
-<meta name="theme-color" content="#0D1117" />
+<meta name="theme-color" content="#111013" />
 <title>Git for Testers</title>
 
 <!-- ============================================================
-     GOOGLE FONTS — Space Grotesk (headings), Inter (body),
+     GOOGLE FONTS — Sora (headings), Inter (body),
      JetBrains Mono (code) — single CDN link
      ============================================================ -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
 
 <style>
 /* ============================================================
    DESIGN SYSTEM — CSS variables
    ============================================================ */
 :root {
-  --bg:        #0D1117;
-  --surface:   #161B22;
-  --surface-2: #21262D;
-  --border:    #30363D;
-  --primary:   #F78166;
-  --secondary: #3FB950;
-  --text:      #E6EDF3;
-  --text-sec:  #8B949E;  /* design-system value — already ~5.9:1 (AA) */
-  --text-mut:  #768390;  /* lightened from #484F58 (~2.3:1) to ~4.7:1 (AA) */
+  --bg:        #111013;  /* warm near-black */
+  --surface:   #1B1A1F;  /* warm dark surface */
+  --surface-2: #262329;
+  --border:    #36333C;
+  --primary:   #F5C518;  /* cohort accent — confident gold */
+  --primary-ink: #2A2400; /* dark ink for text on gold */
+  --secondary: #3FB950;  /* green retained for success confirmations */
+  --text:      #EDE8DA;  /* warm cream */
+  --text-sec:  #A39E92;  /* warm secondary (~6.8:1 AA) */
+  --text-mut:  #8F897E;  /* warm muted (~4.7:1 AA) */
   --warning:   #D29922;
 
-  --font-head: "Space Grotesk", sans-serif;
+  --font-head: "Sora", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-code: "JetBrains Mono", monospace;
 }
@@ -87,7 +88,7 @@ header.topbar {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(13, 17, 23, 0.92);
+  background: rgba(17, 16, 19, 0.92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
 }
@@ -263,7 +264,7 @@ textarea.reflection {
   resize: vertical;
   line-height: 1.6;
 }
-textarea.reflection:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(247, 129, 102, 0.25); }
+textarea.reflection:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.25); }
 textarea.reflection:disabled { opacity: 0.8; cursor: default; }
 
 .word-counter {
@@ -290,13 +291,13 @@ textarea.reflection:disabled { opacity: 0.8; cursor: default; }
 }
 .btn-primary {
   background: var(--primary);
-  color: #1a1100;
+  color: var(--primary-ink);
 }
 .btn-primary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   background: var(--primary);
-  color: #1a1100;
+  color: var(--primary-ink);
 }
 .btn-success {
   background: var(--secondary);
@@ -317,7 +318,7 @@ textarea.reflection:disabled { opacity: 0.8; cursor: default; }
   display: inline-block;
   transition: background 150ms ease;
 }
-.btn-outline:hover { background: rgba(247, 129, 102, 0.1); }
+.btn-outline:hover { background: rgba(245, 197, 24, 0.12); }
 
 /* ============================================================
    COLLAPSIBLE SECTIONS
@@ -437,7 +438,7 @@ textarea.reflection:disabled { opacity: 0.8; cursor: default; }
 .dr-head .dr-name { color: var(--text); font-weight: 600; }
 .dr-head .dr-range { color: var(--text-mut); font-size: 0.8rem; font-family: var(--font-code); }
 .bar { background: var(--border); height: 4px; border-radius: 2px; overflow: hidden; }
-.bar-fill { background: var(--secondary); height: 100%; border-radius: 2px; transition: width 500ms ease; }
+.bar-fill { background: var(--primary); height: 100%; border-radius: 2px; transition: width 500ms ease; }
 
 /* 45-square grid */
 .journey { display: flex; flex-direction: column; gap: 6px; }
@@ -479,9 +480,17 @@ textarea.reflection:disabled { opacity: 0.8; cursor: default; }
   font-family: var(--font-code);
   transition: transform 150ms ease, background 500ms ease;
 }
-.sq.completed { background: var(--secondary); color: #fff; cursor: pointer; }
+.sq.completed { background: var(--primary); color: var(--primary-ink); cursor: pointer; }
 .sq.completed:hover { transform: scale(1.1); }
-.sq.current { background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; }
+/* Current day: outlined gold so it stays distinct from filled (completed) gold */
+.sq.current {
+  background: var(--surface-2);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(245, 197, 24, 0.45);
+}
 .sq.current:hover { transform: scale(1.1); }
 .sq.locked { background: var(--surface-2); border: 1px solid var(--border); font-size: 10px; cursor: default; }
 .sq.empty { visibility: hidden; }
@@ -579,7 +588,7 @@ footer .reset-link:hover { color: var(--text-sec); }
   top: -48px;
   z-index: 200;
   background: var(--primary);
-  color: #1a1100;
+  color: var(--primary-ink);
   font-weight: 700;
   padding: 10px 16px;
   border-radius: 0 0 8px 8px;
@@ -620,12 +629,12 @@ footer .reset-link:hover { color: var(--text-sec); }
   color: var(--text-sec);
   margin-bottom: 6px;
 }
-.overall-head .pct { color: var(--secondary); font-weight: 700; font-family: var(--font-code); }
+.overall-head .pct { color: var(--primary); font-weight: 700; font-family: var(--font-code); }
 .overall-bar { background: var(--border); height: 8px; border-radius: 4px; overflow: hidden; }
 .overall-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, var(--secondary), var(--primary));
+  background: linear-gradient(90deg, var(--primary), #FFE066);
   transition: width 600ms ease;
 }
 
