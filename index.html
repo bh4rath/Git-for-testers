@@ -171,6 +171,8 @@ textarea.reflection:disabled{opacity:0.85;cursor:default;}
 .sq.current{background:var(--surface-2);color:var(--primary);border:2px solid var(--primary);font-weight:700;cursor:pointer;box-shadow:0 0 8px var(--gold-border);}
 .sq.current:hover{transform:scale(1.1);}
 .sq.locked{background:var(--surface-2);border:1px solid var(--border);font-size:10px;cursor:default;color:var(--text-mut);}
+.sq.available{background:var(--surface-2);border:1px solid var(--border);color:var(--text-sec);cursor:pointer;}
+.sq.available:hover{transform:scale(1.1);border-color:var(--gold-border);color:var(--primary);}
 .sq.empty{visibility:hidden;}
 .stats-row{display:flex;justify-content:space-around;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 10px;margin-top:8px;}
 .stat{text-align:center;flex:1;}
@@ -407,19 +409,16 @@ function isDayCompleted(n) {
   return getProgress().completedDays.includes(n);
 }
 
-/* Day 1 always unlocked; Day N unlocks when Day N-1 is completed.
-   (Sunday completion adds the Sunday to completedDays, which unlocks
-   the following Monday under the same rule.) */
+/* No day-locking: every day is accessible at any time. */
 function isDayUnlocked(n) {
-  if (n === 1) return true;
-  return getProgress().completedDays.includes(n - 1);
+  return true;
 }
 
-/* The current day = lowest unlocked, not-yet-completed day */
+/* The current day = lowest not-yet-completed day (just a highlight now) */
 function computeCurrentDay() {
   const p = getProgress();
   for (let n = 1; n <= TOTAL_DAYS; n++) {
-    if (!p.completedDays.includes(n) && isDayUnlocked(n)) return n;
+    if (!p.completedDays.includes(n)) return n;
   }
   return TOTAL_DAYS;
 }
@@ -547,19 +546,18 @@ function renderDay(dayNumber) {
           aria-describedby="wordCounter"
           oninput="updateWordCount()"
           placeholder="Write your reflection here...">${escapeHtml(savedReflection)}</textarea>
-        <div class="word-counter" id="wordCounter" aria-live="polite">0 / 100 words — write at least 100 to unlock</div>`;
+        <div class="word-counter" id="wordCounter" aria-live="polite">0 words</div>`;
 
     if (readOnly) {
       html += `<div class="completed-badge">✓ Completed</div>`;
     } else {
       const btnText = isLastReflectionDay
         ? "Submit Reflection &amp; Complete Cohort"
-        : "Submit Reflection &amp; Unlock Day " + (dayNumber + 1);
+        : "Submit Reflection &amp; Continue to Day " + (dayNumber + 1);
       const alreadyDone = completed;
       html += `
         <div class="submit-row">
           <button class="btn ${alreadyDone ? "btn-success" : "btn-primary"}" id="submitBtn"
-            ${alreadyDone ? "disabled" : "disabled"}
             onclick="submitReflection()">
             ${alreadyDone ? "✓ Reflection Submitted" : btnText}
           </button>
@@ -626,17 +624,10 @@ function updateWordCount() {
   const btn = document.getElementById("submitBtn");
   if (!box || !counter) return;
 
+  // Word count is shown for encouragement only — no submission gate.
   const words = countWords(box.value);
-  const reached = words >= 100;
-  counter.textContent = reached
-    ? words + " / 100 words ✓ ready to submit"
-    : words + " / 100 words — write at least 100 to unlock";
-  counter.classList.toggle("reached", reached);
-
-  // Don't re-enable a button that's already in the submitted state
-  if (btn && !isDayCompleted(viewingDay)) {
-    btn.disabled = !reached;
-  }
+  counter.textContent = words + (words === 1 ? " word" : " words");
+  counter.classList.toggle("reached", words >= 100);
 }
 
 /* ============================================================
@@ -645,7 +636,7 @@ function updateWordCount() {
 function submitReflection() {
   const box = document.getElementById("reflectionBox");
   if (!box) return;
-  if (countWords(box.value) < 100) return;
+  // No word-count restriction — any reflection (even empty) can be submitted.
 
   const p = getProgress();
   const day = viewingDay;
@@ -875,7 +866,8 @@ function renderProgress() {
       } else if (n === current) {
         html += `<div class="sq current" title="Day ${n}: ${escapeHtml(title)}" onclick="goToCurrent(${n})">${n}</div>`;
       } else {
-        html += `<div class="sq locked" title="Complete Day ${n - 1} to unlock" onclick="shakeEl(this)">🔒</div>`;
+        // All days are open — click to jump straight to that day
+        html += `<div class="sq available" title="Day ${n}: ${escapeHtml(title)}" onclick="goToCurrent(${n})">${n}</div>`;
       }
     }
     html += `</div></div>`;
@@ -899,13 +891,13 @@ function renderProgress() {
    ============================================================ */
 function goToCurrent(n) {
   readOnly = false;
-  renderDay(n);
-  showTab("today");
+  showTab("today");   // switch panel first (it renders current day)...
+  renderDay(n);       // ...then render the day we actually picked
 }
 function openReadOnly(n) {
   readOnly = true;
-  renderDay(n);
   showTab("today");
+  renderDay(n);
 }
 function backToToday() {
   readOnly = false;
